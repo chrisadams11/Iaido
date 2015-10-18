@@ -1,0 +1,155 @@
+Elm.Input = Elm.Input || {};
+Elm.Input.make = function (_elm) {
+   "use strict";
+   _elm.Input = _elm.Input || {};
+   if (_elm.Input.values)
+   return _elm.Input.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Input",
+   $Basics = Elm.Basics.make(_elm),
+   $Keyboard = Elm.Keyboard.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var inputSources = _L.fromArray([{_: {}
+                                    ,attackKey: 5
+                                    ,downKey: 2
+                                    ,leftKey: 3
+                                    ,rightKey: 4
+                                    ,upKey: 1}
+                                   ,{_: {}
+                                    ,attackKey: 10
+                                    ,downKey: 7
+                                    ,leftKey: 8
+                                    ,rightKey: 9
+                                    ,upKey: 6}]);
+   var InputSource = F5(function (a,
+   b,
+   c,
+   d,
+   e) {
+      return {_: {}
+             ,attackKey: e
+             ,downKey: b
+             ,leftKey: c
+             ,rightKey: d
+             ,upKey: a};
+   });
+   var playerInput = F5(function (up,
+   down,
+   left,
+   right,
+   attack) {
+      return function () {
+         var y = up ? 1 : down ? -1 : 0;
+         var x = right ? 1 : left ? -1 : 0;
+         var moveDir = {_: {},x: x,y: y};
+         return {_: {}
+                ,attack: attack
+                ,moveDirection: moveDir};
+      }();
+   });
+   var processInput = F2(function (keys,
+   inputSource) {
+      return A5(playerInput,
+      A2($Set.member,
+      inputSource.upKey,
+      keys),
+      A2($Set.member,
+      inputSource.downKey,
+      keys),
+      A2($Set.member,
+      inputSource.leftKey,
+      keys),
+      A2($Set.member,
+      inputSource.rightKey,
+      keys),
+      A2($Set.member,
+      inputSource.attackKey,
+      keys));
+   });
+   var processInputs = F2(function (inputSources,
+   keys) {
+      return A2($List.map,
+      processInput(keys),
+      inputSources);
+   });
+   var PlayerInput = F2(function (a,
+   b) {
+      return {_: {}
+             ,attack: b
+             ,moveDirection: a};
+   });
+   var Input = F2(function (a,b) {
+      return {_: {}
+             ,delta: b
+             ,playerInputs: a};
+   });
+   var updatePlayerInputState = F2(function (input,
+   oldState) {
+      return {_: {}
+             ,attack: input.attack
+             ,moveDirection: input.moveDirection
+             ,playerID: oldState.playerID};
+   });
+   var updateInputState = F2(function (input,
+   oldState) {
+      return {_: {}
+             ,delta: input.delta
+             ,playerInputStates: A2($List.map,
+             $Basics.uncurry(updatePlayerInputState),
+             A3($List.map2,
+             F2(function (v0,v1) {
+                return {ctor: "_Tuple2"
+                       ,_0: v0
+                       ,_1: v1};
+             }),
+             input.playerInputs,
+             oldState.playerInputStates))};
+   });
+   var PlayerInputState = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,attack: c
+             ,moveDirection: b
+             ,playerID: a};
+   });
+   var InputState = F2(function (a,
+   b) {
+      return {_: {}
+             ,delta: b
+             ,playerInputStates: a};
+   });
+   var delta = A2($Signal._op["<~"],
+   $Time.inSeconds,
+   $Time.fps(30));
+   var inputSignal = $Signal.sampleOn(delta)(A2($Signal._op["~"],
+   A2($Signal._op["<~"],
+   Input,
+   A2($Signal._op["<~"],
+   processInputs(inputSources),
+   $Keyboard.keysDown)),
+   delta));
+   _elm.Input.values = {_op: _op
+                       ,delta: delta
+                       ,InputState: InputState
+                       ,PlayerInputState: PlayerInputState
+                       ,updateInputState: updateInputState
+                       ,updatePlayerInputState: updatePlayerInputState
+                       ,Input: Input
+                       ,PlayerInput: PlayerInput
+                       ,playerInput: playerInput
+                       ,InputSource: InputSource
+                       ,inputSources: inputSources
+                       ,processInputs: processInputs
+                       ,processInput: processInput
+                       ,inputSignal: inputSignal};
+   return _elm.Input.values;
+};
