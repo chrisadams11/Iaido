@@ -1,0 +1,273 @@
+Elm.Game = Elm.Game || {};
+Elm.Game.make = function (_elm) {
+   "use strict";
+   _elm.Game = _elm.Game || {};
+   if (_elm.Game.values)
+   return _elm.Game.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Game",
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Input = Elm.Input.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var unsafe = function (x) {
+      return function () {
+         switch (x.ctor)
+         {case "Just": return x._0;
+            case "Nothing":
+            return $Debug.crash("unsafe operation failed!");}
+         _U.badCase($moduleName,
+         "between lines 188 and 190");
+      }();
+   };
+   var unsafeTail = function (list) {
+      return unsafe($List.tail(list));
+   };
+   var unsafeHead = function (list) {
+      return unsafe($List.head(list));
+   };
+   var compareTiles = F2(function (l,
+   r) {
+      return _U.cmp(l.position.row,
+      r.position.row) > 0 ? $Basics.GT : _U.cmp(l.position.col,
+      r.position.col) > 0 ? $Basics.GT : $Basics.EQ;
+   });
+   var findRepeatTiles = function (l) {
+      return _U.eq(l,
+      _L.fromArray([])) ? _L.fromArray([]) : function () {
+         var sortedList = A2($List.sortWith,
+         compareTiles,
+         l);
+         return $Basics.snd(A3($List.foldl,
+         F2(function (elem,_v2) {
+            return function () {
+               switch (_v2.ctor)
+               {case "_Tuple2":
+                  return _U.eq(elem,
+                    _v2._0) ? {ctor: "_Tuple2"
+                              ,_0: elem
+                              ,_1: A2($List._op["::"],
+                              elem,
+                              _v2._1)} : {ctor: "_Tuple2"
+                                         ,_0: elem
+                                         ,_1: _v2._1};}
+               _U.badCase($moduleName,
+               "between lines 167 and 169");
+            }();
+         }),
+         {ctor: "_Tuple2"
+         ,_0: unsafeHead(sortedList)
+         ,_1: _L.fromArray([])},
+         unsafeTail(sortedList)));
+      }();
+   };
+   var associatePlayerInput = F2(function (playerInputStates,
+   player) {
+      return function () {
+         var foundInputState = $List.head(A2($List.filter,
+         function (inputState) {
+            return _U.eq(inputState.playerID,
+            player.playerID);
+         },
+         playerInputStates));
+         return function () {
+            switch (foundInputState.ctor)
+            {case "Just":
+               return $Maybe.Just({_: {}
+                                  ,inputState: foundInputState._0
+                                  ,player: player});
+               case "Nothing":
+               return $Maybe.Nothing;}
+            _U.badCase($moduleName,
+            "between lines 116 and 118");
+         }();
+      }();
+   });
+   var associatePlayerInputs = F2(function (players,
+   playerInputStates) {
+      return A2($List.filterMap,
+      function (player) {
+         return A2(associatePlayerInput,
+         playerInputStates,
+         player);
+      },
+      players);
+   });
+   var PlayerState = F2(function (a,
+   b) {
+      return {_: {}
+             ,inputState: b
+             ,player: a};
+   });
+   var isWalled = F2(function (tile,
+   _v8) {
+      return function () {
+         return function () {
+            var isBlockedVertically = _U.eq(_v8.y,
+            1) && tile.walls.top || _U.eq(_v8.y,
+            -1) && tile.walls.bottom;
+            var isBlockedHorizontally = _U.eq(_v8.x,
+            1) && tile.walls.right || _U.eq(_v8.x,
+            -1) && tile.walls.left;
+            return isBlockedVertically && isBlockedHorizontally;
+         }();
+      }();
+   });
+   var movePlayer = F2(function (crowdedTiles,
+   _v10) {
+      return function () {
+         switch (_v10.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var inputState = _v10._0.inputState;
+                 var player = _v10._0.player;
+                 return A2($List.member,
+                 _v10._1,
+                 crowdedTiles) || (A2(isWalled,
+                 player.tile,
+                 inputState.moveDirection) || A2(isWalled,
+                 _v10._1,
+                 {_: {}
+                 ,x: inputState.moveDirection.x * -1
+                 ,y: inputState.moveDirection.y * -1})) ? _U.replace([["collided"
+                                                                      ,true]],
+                 player) : _U.replace([["tile"
+                                       ,_v10._1]],
+                 player);
+              }();}
+         _U.badCase($moduleName,
+         "between lines 146 and 155");
+      }();
+   });
+   var movePlayers = function (moveTargets) {
+      return function () {
+         var crowdedTiles = findRepeatTiles(A2($List.map,
+         $Basics.snd,
+         moveTargets));
+         return A2($List.map,
+         movePlayer(crowdedTiles),
+         moveTargets);
+      }();
+   };
+   var getTile = F3(function (tiles,
+   row,
+   col) {
+      return $List.head(A2($List.filter,
+      function (tile) {
+         return _U.eq(tile.position.row,
+         row) && _U.eq(tile.position.col,
+         col);
+      },
+      tiles));
+   });
+   var getPlayerMoveTarget = F2(function (playerState,
+   tiles) {
+      return function () {
+         var targetCol = playerState.player.tile.position.col + playerState.inputState.moveDirection.y;
+         var targetRow = playerState.player.tile.position.row + playerState.inputState.moveDirection.x;
+         var targetTile = A3(getTile,
+         tiles,
+         targetRow,
+         targetCol);
+         return function () {
+            switch (targetTile.ctor)
+            {case "Just":
+               return targetTile._0;
+               case "Nothing":
+               return playerState.player.tile;}
+            _U.badCase($moduleName,
+            "between lines 133 and 135");
+         }();
+      }();
+   });
+   var getPlayerMoveTargets = F2(function (playerStates,
+   tiles) {
+      return A2($List.map,
+      function (playerState) {
+         return {ctor: "_Tuple2"
+                ,_0: playerState
+                ,_1: A2(getPlayerMoveTarget,
+                playerState,
+                tiles)};
+      },
+      playerStates);
+   });
+   var movePhase = F2(function (inputState,
+   gameState) {
+      return function () {
+         var playerStates = A2(associatePlayerInputs,
+         gameState.players,
+         inputState.playerInputStates);
+         var moveTargets = A2(getPlayerMoveTargets,
+         playerStates,
+         gameState.board);
+         return _U.replace([["players"
+                            ,movePlayers(moveTargets)]],
+         gameState);
+      }();
+   });
+   var Tile = F2(function (a,b) {
+      return {_: {}
+             ,position: a
+             ,walls: b};
+   });
+   var turnPhases = _L.fromArray([movePhase]);
+   var updateGameState = F2(function (input,
+   oldGame) {
+      return A3($List.foldl,
+      F2(function (turnPhase,
+      gameState) {
+         return A2(turnPhase,
+         input,
+         gameState);
+      }),
+      oldGame,
+      turnPhases);
+   });
+   var Player = F5(function (a,
+   b,
+   c,
+   d,
+   e) {
+      return {_: {}
+             ,collided: d
+             ,iaido: c
+             ,momentum: e
+             ,playerID: a
+             ,tile: b};
+   });
+   var GameState = F2(function (a,
+   b) {
+      return {_: {}
+             ,board: a
+             ,players: b};
+   });
+   _elm.Game.values = {_op: _op
+                      ,GameState: GameState
+                      ,Player: Player
+                      ,updateGameState: updateGameState
+                      ,turnPhases: turnPhases
+                      ,Tile: Tile
+                      ,getTile: getTile
+                      ,isWalled: isWalled
+                      ,PlayerState: PlayerState
+                      ,movePhase: movePhase
+                      ,associatePlayerInputs: associatePlayerInputs
+                      ,associatePlayerInput: associatePlayerInput
+                      ,getPlayerMoveTargets: getPlayerMoveTargets
+                      ,getPlayerMoveTarget: getPlayerMoveTarget
+                      ,movePlayers: movePlayers
+                      ,movePlayer: movePlayer
+                      ,findRepeatTiles: findRepeatTiles
+                      ,compareTiles: compareTiles
+                      ,unsafeHead: unsafeHead
+                      ,unsafeTail: unsafeTail
+                      ,unsafe: unsafe};
+   return _elm.Game.values;
+};

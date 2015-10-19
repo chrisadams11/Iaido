@@ -1,0 +1,102 @@
+Elm.Iaido = Elm.Iaido || {};
+Elm.Iaido.make = function (_elm) {
+   "use strict";
+   _elm.Iaido = _elm.Iaido || {};
+   if (_elm.Iaido.values)
+   return _elm.Iaido.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Iaido",
+   $Basics = Elm.Basics.make(_elm),
+   $Game = Elm.Game.make(_elm),
+   $Graphics = Elm.Graphics.make(_elm),
+   $Input = Elm.Input.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Window = Elm.Window.make(_elm);
+   var updateBattleScene = F2(function (input,
+   battleSceneState) {
+      return function () {
+         var newInputState = A2($Input.updateInputState,
+         input,
+         battleSceneState.inputState);
+         var newGameState = A2($Game.updateGameState,
+         newInputState,
+         battleSceneState.gameState);
+         var newDrawState = A3($Graphics.updateDrawState,
+         newInputState,
+         newGameState,
+         battleSceneState.drawState);
+         return _U.replace([["inputState"
+                            ,newInputState]
+                           ,["gameState",newGameState]
+                           ,["drawState",newDrawState]],
+         battleSceneState);
+      }();
+   });
+   var updateWorldState = F2(function (input,
+   worldState) {
+      return function () {
+         var newSceneState = function () {
+            var _v0 = worldState.sceneState;
+            switch (_v0.ctor)
+            {case "BattleScene":
+               return $Graphics.BattleScene(A2(updateBattleScene,
+                 input,
+                 _v0._0));
+               case "StartMenuScene":
+               return $Graphics.StartMenuScene(false);}
+            _U.badCase($moduleName,
+            "between lines 66 and 69");
+         }();
+         return _U.replace([["sceneState"
+                            ,newSceneState]],
+         worldState);
+      }();
+   });
+   var startingDrawState = 0;
+   var startingGameState = {_: {}
+                           ,board: _L.fromArray([])
+                           ,players: _L.fromArray([])};
+   var startingInputState = {_: {}
+                            ,delta: 0
+                            ,playerInputStates: _L.fromArray([])};
+   var startingBattleSceneState = {_: {}
+                                  ,drawState: startingDrawState
+                                  ,gameState: startingGameState
+                                  ,inputState: startingInputState};
+   var startingWorldState = {_: {}
+                            ,sceneState: $Graphics.BattleScene(startingBattleSceneState)};
+   var worldStream = A3($Signal.foldp,
+   updateWorldState,
+   startingWorldState,
+   $Input.inputSignal);
+   var main = A2($Signal._op["~"],
+   A2($Signal._op["<~"],
+   $Graphics.render,
+   $Window.dimensions),
+   A2($Signal._op["<~"],
+   function (_) {
+      return _.sceneState;
+   },
+   worldStream));
+   var WorldState = function (a) {
+      return {_: {},sceneState: a};
+   };
+   _elm.Iaido.values = {_op: _op
+                       ,WorldState: WorldState
+                       ,startingWorldState: startingWorldState
+                       ,startingBattleSceneState: startingBattleSceneState
+                       ,startingInputState: startingInputState
+                       ,startingGameState: startingGameState
+                       ,startingDrawState: startingDrawState
+                       ,worldStream: worldStream
+                       ,updateWorldState: updateWorldState
+                       ,updateBattleScene: updateBattleScene
+                       ,main: main};
+   return _elm.Iaido.values;
+};

@@ -1,0 +1,94 @@
+Elm.Graphics = Elm.Graphics || {};
+Elm.Graphics.make = function (_elm) {
+   "use strict";
+   _elm.Graphics = _elm.Graphics || {};
+   if (_elm.Graphics.values)
+   return _elm.Graphics.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Graphics",
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Game = Elm.Game.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Input = Elm.Input.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var renderBattleScene = F2(function (_v0,
+   drawState) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return A3($Graphics$Collage.collage,
+              200,
+              200,
+              _L.fromArray([A2($Graphics$Collage.filled,
+              $Color.red,
+              A2($Graphics$Collage.rect,
+              200,
+              200))]));}
+         _U.badCase($moduleName,
+         "on line 60, column 3 to 46");
+      }();
+   });
+   var render = F2(function (_v4,
+   scene) {
+      return function () {
+         switch (_v4.ctor)
+         {case "_Tuple2":
+            return function () {
+                 switch (scene.ctor)
+                 {case "BattleScene":
+                    return A2(renderBattleScene,
+                      {ctor: "_Tuple2"
+                      ,_0: _v4._0
+                      ,_1: _v4._1},
+                      scene._0.drawState);}
+                 return A3($Graphics$Collage.collage,
+                 200,
+                 200,
+                 _L.fromArray([A2($Graphics$Collage.filled,
+                 $Color.red,
+                 A2($Graphics$Collage.rect,
+                 200,
+                 200))]));
+              }();}
+         _U.badCase($moduleName,
+         "between lines 54 and 56");
+      }();
+   });
+   var updateDrawState = F3(function (inputState,
+   gameState,
+   oldDrawState) {
+      return oldDrawState;
+   });
+   var BattleSceneState = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,drawState: c
+             ,gameState: b
+             ,inputState: a};
+   });
+   var BattleScene = function (a) {
+      return {ctor: "BattleScene"
+             ,_0: a};
+   };
+   var StartMenuScene = function (a) {
+      return {ctor: "StartMenuScene"
+             ,_0: a};
+   };
+   _elm.Graphics.values = {_op: _op
+                          ,StartMenuScene: StartMenuScene
+                          ,BattleScene: BattleScene
+                          ,BattleSceneState: BattleSceneState
+                          ,updateDrawState: updateDrawState
+                          ,render: render
+                          ,renderBattleScene: renderBattleScene};
+   return _elm.Graphics.values;
+};

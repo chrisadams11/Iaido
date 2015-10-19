@@ -2,6 +2,7 @@ module Graphics where
 
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
+import Color exposing (..)
 import Set exposing (Set)
 import Signal exposing ((<~), (~), Signal)
 import Signal
@@ -25,6 +26,20 @@ import Input exposing (..)
 
 type alias DrawState = Int
 
+type SceneState = StartMenuScene (StartMenuSceneState) | BattleScene (BattleSceneState)
+
+type alias StartMenuSceneState = Bool
+
+--The world state consists of the input state,
+--the game state,
+--and the draw state.
+type alias BattleSceneState =
+  {
+    inputState: InputState,
+    gameState: GameState,
+    drawState: DrawState
+  }
+
 updateDrawState : InputState -> GameState -> DrawState -> DrawState
 updateDrawState inputState gameState oldDrawState =
   oldDrawState
@@ -37,9 +52,9 @@ updateDrawState inputState gameState oldDrawState =
 render : (Int,Int) -> SceneState -> Element
 render (w,h) scene =
   case scene of
-    BattleScene battleSceneState -> renderBattleScene (w,h) battleSceneState.drawState
-    _                       -> rect 100 100
+    BattleScene battleSceneState    -> renderBattleScene (w,h) battleSceneState.drawState
+    _                               -> collage 200 200 [filled red (rect 200 200)]
 
 renderBattleScene : (Int, Int) -> DrawState -> Element
 renderBattleScene (w,h) drawState =
-  rect 200 200
+  collage 200 200 [filled red (rect 200 200)]

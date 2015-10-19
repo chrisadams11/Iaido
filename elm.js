@@ -1707,6 +1707,373 @@ Elm.Dict.make = function (_elm) {
                       ,fromList: fromList};
    return _elm.Dict.values;
 };
+Elm.Game = Elm.Game || {};
+Elm.Game.make = function (_elm) {
+   "use strict";
+   _elm.Game = _elm.Game || {};
+   if (_elm.Game.values)
+   return _elm.Game.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Game",
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Input = Elm.Input.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var unsafe = function (x) {
+      return function () {
+         switch (x.ctor)
+         {case "Just": return x._0;
+            case "Nothing":
+            return $Debug.crash("unsafe operation failed!");}
+         _U.badCase($moduleName,
+         "between lines 188 and 190");
+      }();
+   };
+   var unsafeTail = function (list) {
+      return unsafe($List.tail(list));
+   };
+   var unsafeHead = function (list) {
+      return unsafe($List.head(list));
+   };
+   var compareTiles = F2(function (l,
+   r) {
+      return _U.cmp(l.position.row,
+      r.position.row) > 0 ? $Basics.GT : _U.cmp(l.position.col,
+      r.position.col) > 0 ? $Basics.GT : $Basics.EQ;
+   });
+   var findRepeatTiles = function (l) {
+      return _U.eq(l,
+      _L.fromArray([])) ? _L.fromArray([]) : function () {
+         var sortedList = A2($List.sortWith,
+         compareTiles,
+         l);
+         return $Basics.snd(A3($List.foldl,
+         F2(function (elem,_v2) {
+            return function () {
+               switch (_v2.ctor)
+               {case "_Tuple2":
+                  return _U.eq(elem,
+                    _v2._0) ? {ctor: "_Tuple2"
+                              ,_0: elem
+                              ,_1: A2($List._op["::"],
+                              elem,
+                              _v2._1)} : {ctor: "_Tuple2"
+                                         ,_0: elem
+                                         ,_1: _v2._1};}
+               _U.badCase($moduleName,
+               "between lines 167 and 169");
+            }();
+         }),
+         {ctor: "_Tuple2"
+         ,_0: unsafeHead(sortedList)
+         ,_1: _L.fromArray([])},
+         unsafeTail(sortedList)));
+      }();
+   };
+   var associatePlayerInput = F2(function (playerInputStates,
+   player) {
+      return function () {
+         var foundInputState = $List.head(A2($List.filter,
+         function (inputState) {
+            return _U.eq(inputState.playerID,
+            player.playerID);
+         },
+         playerInputStates));
+         return function () {
+            switch (foundInputState.ctor)
+            {case "Just":
+               return $Maybe.Just({_: {}
+                                  ,inputState: foundInputState._0
+                                  ,player: player});
+               case "Nothing":
+               return $Maybe.Nothing;}
+            _U.badCase($moduleName,
+            "between lines 116 and 118");
+         }();
+      }();
+   });
+   var associatePlayerInputs = F2(function (players,
+   playerInputStates) {
+      return A2($List.filterMap,
+      function (player) {
+         return A2(associatePlayerInput,
+         playerInputStates,
+         player);
+      },
+      players);
+   });
+   var PlayerState = F2(function (a,
+   b) {
+      return {_: {}
+             ,inputState: b
+             ,player: a};
+   });
+   var isWalled = F2(function (tile,
+   _v8) {
+      return function () {
+         return function () {
+            var isBlockedVertically = _U.eq(_v8.y,
+            1) && tile.walls.top || _U.eq(_v8.y,
+            -1) && tile.walls.bottom;
+            var isBlockedHorizontally = _U.eq(_v8.x,
+            1) && tile.walls.right || _U.eq(_v8.x,
+            -1) && tile.walls.left;
+            return isBlockedVertically && isBlockedHorizontally;
+         }();
+      }();
+   });
+   var movePlayer = F2(function (crowdedTiles,
+   _v10) {
+      return function () {
+         switch (_v10.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var inputState = _v10._0.inputState;
+                 var player = _v10._0.player;
+                 return A2($List.member,
+                 _v10._1,
+                 crowdedTiles) || (A2(isWalled,
+                 player.tile,
+                 inputState.moveDirection) || A2(isWalled,
+                 _v10._1,
+                 {_: {}
+                 ,x: inputState.moveDirection.x * -1
+                 ,y: inputState.moveDirection.y * -1})) ? _U.replace([["collided"
+                                                                      ,true]],
+                 player) : _U.replace([["tile"
+                                       ,_v10._1]],
+                 player);
+              }();}
+         _U.badCase($moduleName,
+         "between lines 146 and 155");
+      }();
+   });
+   var movePlayers = function (moveTargets) {
+      return function () {
+         var crowdedTiles = findRepeatTiles(A2($List.map,
+         $Basics.snd,
+         moveTargets));
+         return A2($List.map,
+         movePlayer(crowdedTiles),
+         moveTargets);
+      }();
+   };
+   var getTile = F3(function (tiles,
+   row,
+   col) {
+      return $List.head(A2($List.filter,
+      function (tile) {
+         return _U.eq(tile.position.row,
+         row) && _U.eq(tile.position.col,
+         col);
+      },
+      tiles));
+   });
+   var getPlayerMoveTarget = F2(function (playerState,
+   tiles) {
+      return function () {
+         var targetCol = playerState.player.tile.position.col + playerState.inputState.moveDirection.y;
+         var targetRow = playerState.player.tile.position.row + playerState.inputState.moveDirection.x;
+         var targetTile = A3(getTile,
+         tiles,
+         targetRow,
+         targetCol);
+         return function () {
+            switch (targetTile.ctor)
+            {case "Just":
+               return targetTile._0;
+               case "Nothing":
+               return playerState.player.tile;}
+            _U.badCase($moduleName,
+            "between lines 133 and 135");
+         }();
+      }();
+   });
+   var getPlayerMoveTargets = F2(function (playerStates,
+   tiles) {
+      return A2($List.map,
+      function (playerState) {
+         return {ctor: "_Tuple2"
+                ,_0: playerState
+                ,_1: A2(getPlayerMoveTarget,
+                playerState,
+                tiles)};
+      },
+      playerStates);
+   });
+   var movePhase = F2(function (inputState,
+   gameState) {
+      return function () {
+         var playerStates = A2(associatePlayerInputs,
+         gameState.players,
+         inputState.playerInputStates);
+         var moveTargets = A2(getPlayerMoveTargets,
+         playerStates,
+         gameState.board);
+         return _U.replace([["players"
+                            ,movePlayers(moveTargets)]],
+         gameState);
+      }();
+   });
+   var Tile = F2(function (a,b) {
+      return {_: {}
+             ,position: a
+             ,walls: b};
+   });
+   var turnPhases = _L.fromArray([movePhase]);
+   var updateGameState = F2(function (input,
+   oldGame) {
+      return A3($List.foldl,
+      F2(function (turnPhase,
+      gameState) {
+         return A2(turnPhase,
+         input,
+         gameState);
+      }),
+      oldGame,
+      turnPhases);
+   });
+   var Player = F5(function (a,
+   b,
+   c,
+   d,
+   e) {
+      return {_: {}
+             ,collided: d
+             ,iaido: c
+             ,momentum: e
+             ,playerID: a
+             ,tile: b};
+   });
+   var GameState = F2(function (a,
+   b) {
+      return {_: {}
+             ,board: a
+             ,players: b};
+   });
+   _elm.Game.values = {_op: _op
+                      ,GameState: GameState
+                      ,Player: Player
+                      ,updateGameState: updateGameState
+                      ,turnPhases: turnPhases
+                      ,Tile: Tile
+                      ,getTile: getTile
+                      ,isWalled: isWalled
+                      ,PlayerState: PlayerState
+                      ,movePhase: movePhase
+                      ,associatePlayerInputs: associatePlayerInputs
+                      ,associatePlayerInput: associatePlayerInput
+                      ,getPlayerMoveTargets: getPlayerMoveTargets
+                      ,getPlayerMoveTarget: getPlayerMoveTarget
+                      ,movePlayers: movePlayers
+                      ,movePlayer: movePlayer
+                      ,findRepeatTiles: findRepeatTiles
+                      ,compareTiles: compareTiles
+                      ,unsafeHead: unsafeHead
+                      ,unsafeTail: unsafeTail
+                      ,unsafe: unsafe};
+   return _elm.Game.values;
+};
+Elm.Graphics = Elm.Graphics || {};
+Elm.Graphics.make = function (_elm) {
+   "use strict";
+   _elm.Graphics = _elm.Graphics || {};
+   if (_elm.Graphics.values)
+   return _elm.Graphics.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Graphics",
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Game = Elm.Game.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Input = Elm.Input.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var renderBattleScene = F2(function (_v0,
+   drawState) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return A3($Graphics$Collage.collage,
+              200,
+              200,
+              _L.fromArray([A2($Graphics$Collage.filled,
+              $Color.red,
+              A2($Graphics$Collage.rect,
+              200,
+              200))]));}
+         _U.badCase($moduleName,
+         "on line 60, column 3 to 46");
+      }();
+   });
+   var render = F2(function (_v4,
+   scene) {
+      return function () {
+         switch (_v4.ctor)
+         {case "_Tuple2":
+            return function () {
+                 switch (scene.ctor)
+                 {case "BattleScene":
+                    return A2(renderBattleScene,
+                      {ctor: "_Tuple2"
+                      ,_0: _v4._0
+                      ,_1: _v4._1},
+                      scene._0.drawState);}
+                 return A3($Graphics$Collage.collage,
+                 200,
+                 200,
+                 _L.fromArray([A2($Graphics$Collage.filled,
+                 $Color.red,
+                 A2($Graphics$Collage.rect,
+                 200,
+                 200))]));
+              }();}
+         _U.badCase($moduleName,
+         "between lines 54 and 56");
+      }();
+   });
+   var updateDrawState = F3(function (inputState,
+   gameState,
+   oldDrawState) {
+      return oldDrawState;
+   });
+   var BattleSceneState = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,drawState: c
+             ,gameState: b
+             ,inputState: a};
+   });
+   var BattleScene = function (a) {
+      return {ctor: "BattleScene"
+             ,_0: a};
+   };
+   var StartMenuScene = function (a) {
+      return {ctor: "StartMenuScene"
+             ,_0: a};
+   };
+   _elm.Graphics.values = {_op: _op
+                          ,StartMenuScene: StartMenuScene
+                          ,BattleScene: BattleScene
+                          ,BattleSceneState: BattleSceneState
+                          ,updateDrawState: updateDrawState
+                          ,render: render
+                          ,renderBattleScene: renderBattleScene};
+   return _elm.Graphics.values;
+};
 Elm.Graphics = Elm.Graphics || {};
 Elm.Graphics.Collage = Elm.Graphics.Collage || {};
 Elm.Graphics.Collage.make = function (_elm) {
@@ -2594,6 +2961,108 @@ Elm.Graphics.Element.make = function (_elm) {
                                   ,Element: Element
                                   ,Position: Position};
    return _elm.Graphics.Element.values;
+};
+Elm.Iaido = Elm.Iaido || {};
+Elm.Iaido.make = function (_elm) {
+   "use strict";
+   _elm.Iaido = _elm.Iaido || {};
+   if (_elm.Iaido.values)
+   return _elm.Iaido.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Iaido",
+   $Basics = Elm.Basics.make(_elm),
+   $Game = Elm.Game.make(_elm),
+   $Graphics = Elm.Graphics.make(_elm),
+   $Input = Elm.Input.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Window = Elm.Window.make(_elm);
+   var updateBattleScene = F2(function (input,
+   battleSceneState) {
+      return function () {
+         var newInputState = A2($Input.updateInputState,
+         input,
+         battleSceneState.inputState);
+         var newGameState = A2($Game.updateGameState,
+         newInputState,
+         battleSceneState.gameState);
+         var newDrawState = A3($Graphics.updateDrawState,
+         newInputState,
+         newGameState,
+         battleSceneState.drawState);
+         return _U.replace([["inputState"
+                            ,newInputState]
+                           ,["gameState",newGameState]
+                           ,["drawState",newDrawState]],
+         battleSceneState);
+      }();
+   });
+   var updateWorldState = F2(function (input,
+   worldState) {
+      return function () {
+         var newSceneState = function () {
+            var _v0 = worldState.sceneState;
+            switch (_v0.ctor)
+            {case "BattleScene":
+               return $Graphics.BattleScene(A2(updateBattleScene,
+                 input,
+                 _v0._0));
+               case "StartMenuScene":
+               return $Graphics.StartMenuScene(false);}
+            _U.badCase($moduleName,
+            "between lines 66 and 69");
+         }();
+         return _U.replace([["sceneState"
+                            ,newSceneState]],
+         worldState);
+      }();
+   });
+   var startingDrawState = 0;
+   var startingGameState = {_: {}
+                           ,board: _L.fromArray([])
+                           ,players: _L.fromArray([])};
+   var startingInputState = {_: {}
+                            ,delta: 0
+                            ,playerInputStates: _L.fromArray([])};
+   var startingBattleSceneState = {_: {}
+                                  ,drawState: startingDrawState
+                                  ,gameState: startingGameState
+                                  ,inputState: startingInputState};
+   var startingWorldState = {_: {}
+                            ,sceneState: $Graphics.BattleScene(startingBattleSceneState)};
+   var worldStream = A3($Signal.foldp,
+   updateWorldState,
+   startingWorldState,
+   $Input.inputSignal);
+   var main = A2($Signal._op["~"],
+   A2($Signal._op["<~"],
+   $Graphics.render,
+   $Window.dimensions),
+   A2($Signal._op["<~"],
+   function (_) {
+      return _.sceneState;
+   },
+   worldStream));
+   var WorldState = function (a) {
+      return {_: {},sceneState: a};
+   };
+   _elm.Iaido.values = {_op: _op
+                       ,WorldState: WorldState
+                       ,startingWorldState: startingWorldState
+                       ,startingBattleSceneState: startingBattleSceneState
+                       ,startingInputState: startingInputState
+                       ,startingGameState: startingGameState
+                       ,startingDrawState: startingDrawState
+                       ,worldStream: worldStream
+                       ,updateWorldState: updateWorldState
+                       ,updateBattleScene: updateBattleScene
+                       ,main: main};
+   return _elm.Iaido.values;
 };
 Elm.Input = Elm.Input || {};
 Elm.Input.make = function (_elm) {

@@ -10,7 +10,7 @@ import Maybe exposing (withDefault)
 import List
 import List exposing  ((::))
 import Window
-import Debug
+import Debug 
 import Game exposing (..)
 import Input exposing (..)
 import Graphics exposing (..)
@@ -23,24 +23,10 @@ type alias WorldState =
     sceneState: SceneState
   }
 
-type SceneState = StartMenuScene (StartMenuSceneState) | BattleScene (BattleSceneState)
-
-type alias StartMenuSceneState = Bool
-
---The world state consists of the input state,
---the game state,
---and the draw state.
-type alias BattleSceneState =
-  {
-    inputState: InputState,
-    gameState: GameState,
-    drawState: DrawState
-  }
-
 startingWorldState : WorldState
 startingWorldState =
   {
-    sceneState = startingBattleSceneState
+    sceneState = BattleScene startingBattleSceneState
   }
 
 startingBattleSceneState : BattleSceneState
@@ -72,14 +58,14 @@ startingDrawState = 0
 --over the stream of raw input data starting from the given default state.
 worldStream : Signal WorldState
 worldStream =
-  Signal.foldp updateWorldState inputSignal (startingWorldState)
+  Signal.foldp updateWorldState startingWorldState inputSignal
 
 updateWorldState : Input -> WorldState -> WorldState
 updateWorldState input worldState =
   let
     newSceneState = case worldState.sceneState of
-      BattleScene battleSceneState       -> updateBattleScene input battleSceneState
-      StartMenuScene startMenuSceneState -> False
+      BattleScene battleSceneState       -> BattleScene (updateBattleScene input battleSceneState)
+      StartMenuScene startMenuSceneState -> StartMenuScene False
   in
     {worldState |
       sceneState <- newSceneState}

@@ -114,14 +114,13 @@ associatePlayerInput playerInputStates player =
                           playerInputStates)
   in
     case foundInputState of
-      Just playerInputState -> {player = player, inputState = playerInputState}
+      Just playerInputState -> Just {player = player, inputState = playerInputState}
       Nothing -> Nothing
 
-getPlayerMoveTargets : List PlayerState -> List Tile -> List (Player, Tile)
+getPlayerMoveTargets : List PlayerState -> List Tile -> List (PlayerState, Tile)
 getPlayerMoveTargets playerStates tiles =
   List.map
-    (\ playerState->
-      (playerState.player, getPlayerMoveTarget playerState tiles))
+    (\ playerState-> (playerState, getPlayerMoveTarget playerState tiles))
     playerStates
 
 getPlayerMoveTarget : PlayerState -> List Tile -> Tile
@@ -164,7 +163,7 @@ findRepeatTiles l =
     in
       snd
         (List.foldl
-          (\(previousElem, acc) elem ->
+          (\elem (previousElem, acc) ->
             if (elem == previousElem)
             then (elem, elem :: acc)
             else (elem, acc))
