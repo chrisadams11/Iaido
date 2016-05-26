@@ -1,67 +1,60 @@
 type Action = AttackAction | MoveAction | IaidoAction | ReadyAction
 
-type Priority = High | Moderate | Low | Lowest
+type Effect = DamageEffect | BlockEffect | MoveEffect | StatusEffect
 
-type Effect = DamageEffect | BlockEffect | MoveEffect | InvulnEffect | VulnEffect
+type Status = Ready | Invulnerability | Stun
 
 type alias EffectQueue =
   { highStack : List Effect
-  , moderateStack : List Effect
+  , midStack : List Effect
   , lowStack : List Effect
   , lowestStack : List Effect
 }
 
 type alias AttackAction =
-  { playerId : PlayerID
+  { player : Player
   , direction : Vector
 }
 
 type alias MoveAction =
-  { playerId : PlayerID
+  { player : Player
   , direction : Vector
 }
 
 type alias IaidoAction =
-  { playerId : PlayerID
+  { player : Player
   , direction : Vector
 }
 
 type alias ReadyAction =
-  { playerId : PlayerID
+  { player : Player
 }
 
 type alias DamageEffect =
-  { sourcePlayer : PlayerID
+  { sourcePlayer : Player
   , direction : Vector
   , targetTile : Tile
-  , priority : Priority
 }
 
 type BlockEffect =
-  { sourcePlayer : PlayerID
+  { sourcePlayer : Player
   , direction : Vector
   , targetTile : Tile
-  , priority : Priority
 }
 
 type MoveEffect =
-  { targetPlayer : PlayerID
+  { targetPlayer : Player
   , destination : Tile
-  , priority : Priority
 }
 
-type InvulnEffect =
-  { targetPlayer : PlayerID
-  , priority : Priority
-}
-
-type VulnEffect =
-  { targetPlayer : PlayerID
-  , priority : Priority
+type StatusEffect =
+  { targetPlayer : Player
+  , status : Status
+  , value : Bool
 }
 
 resolveEffectQueue : EffectQueue -> GameState -> GameState
-resolveEffectQueue effects game = List.foldr resolveEffectStack game [effects.highStack, effects.moderateStack, effects.lowStack, effects.lowestStack]
+resolveEffectQueue effects game = List.foldr resolveEffectStack game [effects.highStack, effects.midStack, effects.lowStack, effects.lowestStack]
 
 resolveEffectStack : List Effect -> GameState -> GameState
 resolveEffectStack effects game = list.foldr resolveEffect (game, effects) effects
@@ -78,21 +71,74 @@ resolveEffect effect (game, effects) =
 resolveDamage : DamageEffect -> (GameState, List Effect)
 resolveBlock : BlockEffect -> (GameState, List Effect)
 resolveMove : MoveEffect -> (GameState, List Effect)
-resolveInvuln : InvulnEffect -> (GameState, List Effect)
-resolveVuln : VulnEffect -> (GameState, List Effect)
+resolveStatus : StatusEffect -> (GameState, List Effect)
 
-doActions : List Action -> EffectQueue -> EffectQueue
-doActions actions game = List.foldr doAction effects actions
+doActions : GameState -> List Action -> EffectQueue -> EffectQueue
+doActions game actions effects = List.foldr (doAction game) effects actions
 
-doAction : Action -> EffectQueue -> EffectQueue
-doAction action effects =
+doAction : GameState -> Action -> EffectQueue -> EffectQueue
+doAction game action effects =
   case action of
-    AttackAction attack -> doAttack attack effects
-    MoveAction move -> doMove move effects
-    IaidoAction iaido -> doIaido iaido effects
-    ReadyAction ready -> doReady ready effects
+    AttackAction attack -> doAttack game attack effects
+    MoveAction move -> doMove game move effects
+    IaidoAction iaido -> doIaido game iaido effects
+    ReadyAction ready -> doReady game ready effects
 
-doAttack : AttackAction -> EffectQueue -> EffectQueue
-doMove : MoveAction -> EffectQueue -> EffectQueue
-doIaido : IaidoAction -> EffectQueue -> EffectQueue
-doReady : ReadyAction -> EffectQueue -> EffectQueue
+doAttack : GameState -> AttackAction -> EffectQueue -> EffectQueue
+doAttack game attackAction effectQueue =
+  let
+    attackTarget = calculateAttackTarget game attackAction.player attackAction.direction
+    damageEffect = { sourcePlayer = attackAction.player, direction = attackAction.direction, targetTile = attackTarget }
+    blockEffect = { sourcePlayer = attackAction.player, direction = reverseVector attackAction.direction, targetTile = attackTarget }
+  in
+    {effectQueue | lowStack = damageEffect :: blockEffect :: effectQueue.lowStack}
+
+calculateAttackTarget : GameState -> Player -> Vector -> Tile
+calculateAttackTarget game player dir =
+  let
+    targetRow = (player.tile.position.row + dir.x)
+    targetCol = (player.tile.position.col + dir.y)
+  in
+    getTile game.board targetRow targetCol
+
+doMove : GameState -> MoveAction -> EffectQueue -> EffectQueue
+doMove game moveAction effectQueue =
+  let
+    moveTarget = calculateMoveTarget game moveAction.player moveAction.direction
+    moveEffect = { targetPlayer = moveAction.playerId, destination = moveTarget }
+  in
+    {effectQueue | highStack = moveEffect :: effectQueue.highStack}
+
+calculateMoveTarget : GameState -> Player -> Vector -> Tile
+calculateMoveTarget game player dir =
+  let
+    targetRow = (player.tile.position.row + dir.x)
+    targetCol = (player.tile.position.col + dir.y)
+  in
+    getTile game.board targetRow targetCol
+
+
+doIaido : GameState -> IaidoAction -> EffectQueue -> EffectQueue
+doIaido game iaidoAction effectQueue =
+  let
+    attackTarget1 = calculateAttackTarget game player dir
+    attackTarget2 = calculateAttackTarget game player (dir * 2)
+    moveTarget = calculateMoveTarget game iaidoAction.player (iaidoAction.direction * 2)
+    damageEffect1 = { sourcePlayer = iaidoAction.player, direction = iaidoAction.direction, targetTile = attackTarget1 }
+    damageEffect2 = { sourcePlayer = iaidoAction.player, direction = iaidoAction.direction, targetTile = attackTarget2 }
+    moveEffect = {targetPlayer = moveAction.playerId, destination = moveTarget }
+    invulnEffect = { targetPlayer = iaidoAction.player, status = Invulnerability, value = True }
+    endInvulnEffect = { targetPlayer = iaidoAction.player, status = Invulnerability, value = False }
+    endReadyEffect = { targetPlayer = iaidoAction.player, status = Ready, value = False }
+  in
+    {effectQueue |
+      highStack = invulnEffect :: effectQueue.highStack,
+      midStack = damageEffect1 :: damageEffect2 :: moveEffect :: effectQueue.midStack,
+      lowestStack = endInvulnEffect :: endReadyEffect :: effectQueue.lowestStack}
+
+doReady : GameState -> ReadyAction -> EffectQueue -> EffectQueue
+doReady game readyAction effectQueue =
+  let
+    readyEffect = { targetPlayer = readyAction.player, status = Ready, value = True }
+  in
+    {effectQueue | lowestStack = readyEffect :: effectQueue.lowestStack}
