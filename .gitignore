@@ -3,3 +3,5 @@ Game.elm
 Graphics.elm
 Input.elm
 Main.elm
+elm-stuff/
+elm.js
