@@ -1,7 +1,7 @@
-module Update.GameUtilities exposing (..)
+module CombatScene.Update.GameUtilities exposing (..)
 
-import Model.InputModels exposing (..)
-import Model.GameModels exposing (..)
+import CombatScene.Model.InputModels exposing (..)
+import CombatScene.Model.GameModels exposing (..)
 import Utility exposing (..)
 
 

@@ -1,10 +1,11 @@
-module Update.GameLogic exposing (..)
+module CombatScene.Update.GameLogic exposing (..)
 
-import Model.InputModels exposing (..)
-import Model.GameModels exposing (..)
-import Update.ActionSystem exposing (..)
-import Update.GameUtilities exposing (..)
+import CombatScene.Model.InputModels exposing (..)
+import CombatScene.Model.GameModels exposing (..)
+import CombatScene.Update.ActionSystem exposing (..)
+import CombatScene.Update.GameUtilities exposing (..)
 import Utility exposing (..)
+
 
 updateGameState : InputState -> GameState -> GameState
 updateGameState inputState gameState =

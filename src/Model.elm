@@ -1,34 +1,14 @@
 module Model exposing (..)
 
-import Utility exposing (..)
-import Model.InputModels exposing (..)
-import Model.GameModels exposing (..)
-import Model.ViewModels exposing (..)
-import Time exposing (..)
+import TitleScene.TitleScene exposing (..)
+import CombatScene.CombatScene exposing (..)
+
 
 type Model
-    = Title
-    | Game GameModel
-
-
-type alias GameModel =
-    { inputFrame : InputFrame
-    , inputState : InputState
-    , gameState : GameState
-    , drawState : DrawState
-    }
+    = Title TitleModel
+    | Combat CombatModel
 
 
 initModel : Model
 initModel =
-    Title
-
-
-initGameModel : Model
-initGameModel =
-    Game
-        { inputFrame = newInputFrame
-        , inputState = initialInputState
-        , gameState = initialGameState
-        , drawState = {}
-        }
+    Title initTitleModel

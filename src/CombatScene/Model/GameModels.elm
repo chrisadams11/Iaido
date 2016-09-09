@@ -1,4 +1,4 @@
-module Model.GameModels exposing (..)
+module CombatScene.Model.GameModels exposing (..)
 
 import Utility exposing (..)
 

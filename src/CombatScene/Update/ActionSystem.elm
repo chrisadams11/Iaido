@@ -1,8 +1,8 @@
-module Update.ActionSystem exposing (..)
+module CombatScene.Update.ActionSystem exposing (..)
 
 import Utility exposing (..)
-import Model.GameModels exposing (..)
-import Update.GameUtilities exposing (..)
+import CombatScene.Model.GameModels exposing (..)
+import CombatScene.Update.GameUtilities exposing (..)
 
 
 type Action

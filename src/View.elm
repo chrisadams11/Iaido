@@ -1,28 +1,22 @@
 module View exposing (..)
 
-import Model.ViewModels exposing (..)
+import TitleScene.TitleScene exposing (..)
+import CombatScene.CombatScene exposing (..)
 import Model exposing (..)
 import Update exposing (..)
 import Html exposing (Html, button, div, text, img, canvas, h1, h3)
+import Html.App
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
-import List exposing (..)
-import String
 
 
 view : Model -> Html Msg
 view model =
     case model of
-        Title ->
-            drawTitle
+        Title titleModel ->
+            drawTitleScene titleModel |> (Html.App.map (\msg -> TitleMsg msg))
 
-        Game gameModel ->
-            drawGame gameModel.drawState
-
-
-drawTitle : Html Msg
-drawTitle =
-    div [] []
+        Combat combatModel ->
+            drawCombatScene combatModel |> (Html.App.map (\msg -> CombatMsg msg))
 
 
 divFloatWrapper : Html Msg -> Html Msg
@@ -37,8 +31,3 @@ divFloatWrapper elem =
             ]
         ]
         [ elem ]
-
-
-drawGame : DrawState -> Html Msg
-drawGame drawState =
-    div [] []

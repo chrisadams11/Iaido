@@ -1,4 +1,4 @@
-module Model.InputModels exposing (..)
+module CombatScene.Model.InputModels exposing (..)
 
 import Utility exposing (..)
 import Char exposing (KeyCode)
@@ -60,12 +60,15 @@ type alias InputSource =
     , attackKey : KeyCode
     }
 
+
 newInputFrame : InputFrame
 newInputFrame =
     { playerInputs = []
     }
 
-    --A starting input state, only used for development.
+
+
+--A starting input state, only used for development.
 --Later, this needs to be obtained at runtime.
 
 

@@ -1,67 +1,59 @@
 module Update exposing (..)
 
 import Model exposing (..)
-import Model.InputModels exposing (..)
-import Update.InputLogic exposing (..)
-import Update.GameLogic exposing (..)
-import Update.ViewLogic exposing (..)
-import Time exposing (..)
+import CombatScene.CombatScene exposing (..)
+import TitleScene.TitleScene exposing (..)
+import Platform.Sub
+
 
 type Msg
-    = TitleBegin
-    | Tick Time
+    = CombatMsg CombatSceneMsg
+    | TitleMsg TitleSceneMsg
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.none
+subscriptions model =
+    case model of
+        Combat combatModel ->
+            (combatScenesubscriptions combatModel) |> (Sub.map (\sub -> CombatMsg sub))
+
+        Title titleModel ->
+            (titleScenesubscriptions titleModel) |> (Sub.map (\sub -> TitleMsg sub))
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case model of
-        Title ->
-            updateTitle msg
+        Title titleModel ->
+            case msg of
+                TitleMsg titleMsg ->
+                    let
+                        ( updatedTitleModel, cmd, transition ) =
+                            updateTitle titleMsg
+                    in
+                        case transition of
+                            BeginPlay ->
+                                ( Combat initCombatModel, Cmd.none )
 
-        Game gameModel ->
-            updateGame msg gameModel
+                            _ ->
+                                ( Title updatedTitleModel, Cmd.none )
 
+                _ ->
+                    ( model, Cmd.none )
 
-updateTitle : Msg -> ( Model, Cmd msg )
-updateTitle msg =
-    case msg of
-        TitleBegin ->
-            ( initGameModel, Cmd.none )
+        Combat combatModel ->
+            case msg of
+                CombatMsg combatMsg ->
+                    let
+                        ( updatedCombatModel, cmd, transition ) =
+                            updateCombatScene combatMsg combatModel
+                    in
+                        case transition of
+                            GameOver ->
+                                ( Title initTitleModel, cmd )
 
-        _ ->
-            ( Title, Cmd.none )
+                            _ ->
+                                ( Combat updatedCombatModel, cmd )
 
-
-updateGame : Msg -> GameModel -> ( Model, Cmd msg )
-updateGame msg game =
-    case msg of
-        -- Main game loop
-        Tick time ->
-            let
-                updatedInputState =
-                    updateInputState game.inputFrame game.inputState
-
-                updatedGameState =
-                    updateGameState updatedInputState game.gameState
-
-                updatedDrawState =
-                    updateDrawState game.gameState game.inputState game.drawState
-            in
-                ( Game
-                    { game
-                        | inputFrame = newInputFrame
-                        , inputState = updatedInputState
-                        , gameState = updatedGameState
-                        , drawState = updatedDrawState
-                    }
-                , Cmd.none
-                )
-
-        -- Input messages
-
-        _ ->
-            ( Game game, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
