@@ -31,6 +31,7 @@ type alias PlayerInputFrame =
 
 type alias InputState =
     { playerInputStates : List PlayerInputState
+    , inputSources : List InputSource
     , ticks : Int
     , turnChanged : Bool
     }
@@ -75,6 +76,7 @@ newInputFrame =
 initialInputState : InputState
 initialInputState =
     { playerInputStates = []
+    , inputSources = inputSources
     , ticks = 0
     , turnChanged = False
     }

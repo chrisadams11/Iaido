@@ -6,13 +6,24 @@ import CombatScene.Model.ViewModels exposing (..)
 import CombatScene.Update.InputLogic exposing (..)
 import CombatScene.Update.GameLogic exposing (..)
 import CombatScene.Update.ViewLogic exposing (..)
-import Time exposing (..)
+import CombatScene.View.View exposing (..)
+import Time exposing (Time)
+import Utility exposing (..)
 import Html exposing (Html, div)
+import Keyboard
 
 
 type CombatSceneTransition
     = GameOver
     | NoTransition
+
+
+type CombatSceneMsg
+    = TitleBegin
+    | Tick Time
+    | PlayerMove Vector PlayerID
+    | PlayerAttack PlayerID
+    | Ignored
 
 
 type alias CombatModel =
@@ -32,14 +43,38 @@ initCombatModel =
     }
 
 
-type CombatSceneMsg
-    = TitleBegin
-    | Tick Time
-
-
 combatScenesubscriptions : CombatModel -> Sub CombatSceneMsg
 combatScenesubscriptions model =
-    Sub.none
+    Keyboard.presses
+        (\key ->
+            let
+                mappedCommand =
+                    List.map
+                        (\inputSource ->
+                            if inputSource.upKey == key then
+                                PlayerMove { x = 0, y = 1 } inputSource.playerID |> Just
+                            else if inputSource.downKey == key then
+                                PlayerMove { x = 0, y = -1 } inputSource.playerID |> Just
+                            else if inputSource.leftKey == key then
+                                PlayerMove { x = -1, y = 0 } inputSource.playerID |> Just
+                            else if inputSource.rightKey == key then
+                                PlayerMove { x = 1, y = 0 } inputSource.playerID |> Just
+                            else if inputSource.attackKey == key then
+                                PlayerAttack inputSource.playerID |> Just
+                            else
+                                Nothing
+                        )
+                        model.inputState.inputSources
+                        |> filterMaybe
+                        |> List.head
+            in
+                case mappedCommand of
+                    Just msg ->
+                        msg
+
+                    Nothing ->
+                        Ignored
+        )
 
 
 updateCombatScene : CombatSceneMsg -> CombatModel -> ( CombatModel, Cmd msg, CombatSceneTransition )
@@ -74,4 +109,4 @@ updateCombatScene msg model =
 
 drawCombatScene : CombatModel -> Html CombatSceneMsg
 drawCombatScene model =
-    div [] []
+    draw model.drawState

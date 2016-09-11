@@ -1,5 +1,8 @@
 module Utility exposing (..)
 
+import Html exposing (Html, div)
+import Html.Attributes exposing (style)
+import List
 
 type alias PlayerID =
     Int
@@ -42,6 +45,11 @@ filterMaybe list =
         []
         list
 
+
+findFirst : (a -> Bool) -> List a -> Maybe a
+findFirst filter l =
+    List.map (\e -> if filter e then Just e else Nothing) l
+    |> filterMaybe |> List.head
 
 
 --Performs a list.Head operation, crashes if the list is empty.
@@ -95,3 +103,17 @@ listContains l e =
 listRemove : List a -> a -> List a
 listRemove l e =
     List.filter (\b -> e /= b) l
+
+
+divFloatWrapper : Html msg -> Html msg
+divFloatWrapper elem =
+    div
+        [ style
+            [ ( "position", "absolute" )
+            , ( "top", "0" )
+            , ( "left", "0" )
+            , ( "width", "1600px" )
+            , ( "height", "900px" )
+            ]
+        ]
+        [ elem ]
