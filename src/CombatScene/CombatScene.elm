@@ -103,6 +103,22 @@ updateCombatScene msg model =
                 )
 
         -- Input messages
+        PlayerMove dir playerID ->
+            ( { model
+                | inputFrame = addPlayerMoveToInputFrame dir playerID model.inputFrame
+              }
+            , Cmd.none
+            , NoTransition
+            )
+
+        PlayerAttack playerID ->
+            ( { model
+                | inputFrame = addPlayerAttackToInputFrame playerID model.inputFrame
+              }
+            , Cmd.none
+            , NoTransition
+            )        
+
         _ ->
             ( model, Cmd.none, NoTransition )
 

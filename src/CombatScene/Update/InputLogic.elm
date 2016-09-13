@@ -1,6 +1,41 @@
 module CombatScene.Update.InputLogic exposing (..)
 
 import CombatScene.Model.InputModels exposing (..)
+import Utility exposing (..)
+
+
+addPlayerMoveToInputFrame : Vector -> PlayerID -> InputFrame -> InputFrame
+addPlayerMoveToInputFrame dir playerID inputFrame =
+    case findFirst (\i -> i.playerID == playerID) inputFrame.playerInputs of
+        Just playerInputFrame ->
+            let
+                updatedPlayerInputs =
+                    listUpdate
+                        (\i -> i.playerID == playerID)
+                        inputFrame.playerInputs
+                        { playerInputFrame | moveKeys = dir }
+            in
+                { inputFrame | playerInputs = updatedPlayerInputs }
+
+        Nothing ->
+            inputFrame
+
+
+addPlayerAttackToInputFrame : PlayerID -> InputFrame -> InputFrame
+addPlayerAttackToInputFrame playerID inputFrame =
+    case findFirst (\i -> i.playerID == playerID) inputFrame.playerInputs of
+        Just playerInputFrame ->
+            let
+                updatedPlayerInputs =
+                    listUpdate
+                        (\i -> i.playerID == playerID)
+                        inputFrame.playerInputs
+                        { playerInputFrame | attackBtn = True }
+            in
+                { inputFrame | playerInputs = updatedPlayerInputs }
+
+        Nothing ->
+            inputFrame    
 
 
 updateInputState : InputFrame -> InputState -> InputState

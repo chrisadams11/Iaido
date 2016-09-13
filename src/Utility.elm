@@ -117,3 +117,11 @@ divFloatWrapper elem =
             ]
         ]
         [ elem ]
+
+listUpdate : (a -> Bool) -> List a -> a -> List a
+listUpdate identifier l e =
+    e
+        :: (List.filter
+                (\i -> not (identifier i))
+                l
+           )
