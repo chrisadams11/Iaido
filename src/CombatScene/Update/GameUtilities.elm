@@ -3,14 +3,14 @@ module CombatScene.Update.GameUtilities exposing (..)
 import CombatScene.Model.InputModels exposing (..)
 import CombatScene.Model.GameModels exposing (..)
 import Utility exposing (..)
-
+import Tuple
 
 -- Retrieves a tile actor given its row and column
 
 
-getTile : List Tile -> Int -> Int -> Maybe Tile
-getTile tiles row col =
-    List.filter (\tile -> tile.position.row == row && tile.position.col == col) tiles
+getTile : TileCollection -> Coordinate -> Maybe Tile
+getTile tiles {x, y} =
+    List.filter (\tile -> tile.position.x == x && tile.position.y == y) tiles
         |> List.head
 
 
@@ -59,7 +59,7 @@ findRepeatTiles l =
                 ( unsafeHead sortedList, [] )
                 (unsafeTail sortedList)
             )
-                |> snd
+                |> Tuple.second
 
 
 
@@ -68,13 +68,13 @@ findRepeatTiles l =
 
 compareTiles : Tile -> Tile -> Order
 compareTiles l r =
-    if l.position.row > r.position.row then
+    if l.position.x > r.position.x then
         GT
-    else if l.position.row < r.position.row then
+    else if l.position.x < r.position.x then
         LT
-    else if l.position.col > r.position.col then
+    else if l.position.y > r.position.y then
         GT
-    else if l.position.col < r.position.col then
+    else if l.position.y < r.position.y then
         LT
     else
         EQ

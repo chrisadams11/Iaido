@@ -3,12 +3,12 @@ module Main exposing (..)
 import Model exposing (..)
 import Update exposing (..)
 import View exposing (..)
-import Html.App as App
+import Html
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    App.program
+    Html.program
         { init = ( initModel, Cmd.none )
         , subscriptions = subscriptions
         , view = view

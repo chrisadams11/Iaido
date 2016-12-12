@@ -1,10 +1,11 @@
 module CombatScene.Model.GameModels exposing (..)
 
 import Utility exposing (..)
+import List exposing (map)
 
 
 type alias GameState =
-    { board : List Tile
+    { board : TileCollection
     , players : List Player
     }
 
@@ -21,7 +22,7 @@ type Status
 
 type alias Player =
     { playerID : PlayerID
-    , tile : Tile
+    , position : Coordinate
     , iaido : Bool
     , collided : Bool
     , status : List Status
@@ -39,7 +40,7 @@ type alias Player =
 
 
 type alias Tile =
-    { position : { row : Int, col : Int }
+    { position : Coordinate
     , walls :
         { left : Bool
         , right : Bool
@@ -49,8 +50,46 @@ type alias Tile =
     }
 
 
+type alias TileCollection =
+    List Tile
+
+
 initialGameState : GameState
 initialGameState =
-    { board = []
-    , players = []
+    { board = initialBoard
+    , players = initialPlayers
     }
+
+
+initialBoard : List Tile
+initialBoard =
+    map
+        (\i ->
+            { position =
+                { x = i % 10, y = floor <| toFloat i / 10 }
+            , walls =
+                { left = False, right = False, top = False, bottom = False }
+            }
+        )
+        <| List.range 0 100
+
+
+initialPlayers : List Player
+initialPlayers =
+    [ { playerID = 1
+      , position = { x = 0, y = 0 }
+      , iaido = True
+      , collided = False
+      , status = []
+      , hit = False
+      , momentum = { dx = 0, dy = 0 }
+      }
+    , { playerID = 2
+      , position = { x = 1, y = 0 }
+      , iaido = True
+      , collided = False
+      , status = []
+      , hit = False
+      , momentum = { dx = 0, dy = 0 }
+      }
+    ]

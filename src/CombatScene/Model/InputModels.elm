@@ -75,7 +75,16 @@ newInputFrame =
 
 initialInputState : InputState
 initialInputState =
-    { playerInputStates = []
+    { playerInputStates =
+        [ { playerID = 1
+          , moveDirection = { x = 0, y = 0 }
+          , attack = False
+          }
+        , { playerID = 2
+          , moveDirection = { x = 0, y = 0 }
+          , attack = False
+          }
+        ]
     , inputSources = inputSources
     , ticks = 0
     , turnChanged = False

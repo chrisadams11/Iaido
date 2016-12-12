@@ -123,7 +123,7 @@ resolveDamage damage effects game =
         else
             let
                 attackTargets =
-                    List.filter (\player -> compareTiles player.tile damage.targetTile == EQ) game.players
+                    List.filter (\player -> compareTiles (unsafe <| getTile game.board player.position) damage.targetTile == EQ) game.players
             in
                 case List.head attackTargets of
                     Nothing ->
@@ -164,7 +164,7 @@ resolveMove move effects game =
                 game.players
 
         blockingPlayers =
-            List.filter (\player -> compareTiles player.tile move.destination == EQ) immobilePlayers
+            List.filter (\player -> compareTiles (unsafe <| getTile game.board player.position) move.destination == EQ) immobilePlayers
 
         blockingMovements =
             List.filter
@@ -186,7 +186,7 @@ resolveMove move effects game =
                     unsafe (getPlayer game move.targetPlayerID)
 
                 updatedPlayer =
-                    { movingPlayer | tile = move.destination }
+                    { movingPlayer | position = move.destination.position }
             in
                 { game | players = updatePlayer game.players updatedPlayer }
 
@@ -237,69 +237,63 @@ doAction game action effects =
 
 doAttack : GameState -> AttackAction -> EffectQueue -> EffectQueue
 doAttack game attackAction effectQueue =
-    let
-        attackTarget =
-            calculateAttackTarget game attackAction.player attackAction.direction
+    case calculateAttackTarget game attackAction.player attackAction.direction of
+        Nothing ->
+            effectQueue
 
-        damageEffect =
-            { sourcePlayerID = attackAction.player.playerID, direction = attackAction.direction, targetTile = attackTarget }
+        Just tile ->
+            let
+                damageEffect =
+                    { sourcePlayerID = attackAction.player.playerID, direction = attackAction.direction, targetTile = tile }
 
-        blockEffect =
-            { sourcePlayerID = attackAction.player.playerID, direction = reverseVector attackAction.direction, targetTile = attackTarget }
-    in
-        { effectQueue | lowStack = Effect_Damage damageEffect :: Effect_Block blockEffect :: effectQueue.lowStack }
+                blockEffect =
+                    { sourcePlayerID = attackAction.player.playerID, direction = reverseVector attackAction.direction, targetTile = unsafe <| getTile game.board attackAction.player.position }
+            in
+                { effectQueue | lowStack = Effect_Damage damageEffect :: Effect_Block blockEffect :: effectQueue.lowStack }
 
 
-calculateAttackTarget : GameState -> Player -> Vector -> Tile
+calculateAttackTarget : GameState -> Player -> Vector -> Maybe Tile
 calculateAttackTarget game player dir =
     let
-        targetRow =
-            (player.tile.position.row + dir.x)
+        targetX =
+            (player.position.x + dir.x)
 
-        targetCol =
-            (player.tile.position.col + dir.y)
+        targetY =
+            (player.position.y + dir.y)
 
         targetTile =
-            getTile game.board targetRow targetCol
+            getTile game.board { x = targetX, y = targetY }
     in
-        case targetTile of
-            Nothing ->
-                player.tile
-
-            Just tile ->
-                tile
+        targetTile
 
 
 doMove : GameState -> MoveAction -> EffectQueue -> EffectQueue
 doMove game moveAction effectQueue =
-    let
-        moveTarget =
-            calculateMoveTarget game moveAction.player moveAction.direction
+    case calculateMoveTarget game moveAction.player moveAction.direction of
+        Nothing ->
+            effectQueue
 
-        moveEffect =
-            { targetPlayerID = moveAction.player.playerID, destination = moveTarget }
-    in
-        { effectQueue | highStack = Effect_Move moveEffect :: effectQueue.highStack }
+        Just tile ->
+            let
+                moveEffect =
+                    { targetPlayerID = moveAction.player.playerID, destination = tile }
+            in
+                { effectQueue | highStack = Effect_Move moveEffect :: effectQueue.highStack }
 
 
-calculateMoveTarget : GameState -> Player -> Vector -> Tile
+calculateMoveTarget : GameState -> Player -> Vector -> Maybe Tile
 calculateMoveTarget game player dir =
     let
-        targetRow =
-            (player.tile.position.row + dir.x)
+        targetX =
+            (player.position.x + dir.x)
 
-        targetCol =
-            (player.tile.position.col + dir.y)
+        targetY =
+            (player.position.y + dir.y)
 
         targetTile =
-            getTile game.board targetRow targetCol
+            getTile game.board { x = targetX, y = targetY }
     in
-        case targetTile of
-            Nothing ->
-                player.tile
-
-            Just tile ->
-                tile
+        targetTile
 
 
 doIaido : GameState -> IaidoAction -> EffectQueue -> EffectQueue
@@ -315,13 +309,28 @@ doIaido game iaidoAction effectQueue =
             calculateMoveTarget game iaidoAction.player (scaleVector iaidoAction.direction 2)
 
         damageEffect1 =
-            { sourcePlayerID = iaidoAction.player.playerID, direction = iaidoAction.direction, targetTile = attackTarget1 }
+            case attackTarget1 of
+                Nothing ->
+                    Nothing
+
+                Just target ->
+                    Just { sourcePlayerID = iaidoAction.player.playerID, direction = iaidoAction.direction, targetTile = target }
 
         damageEffect2 =
-            { sourcePlayerID = iaidoAction.player.playerID, direction = iaidoAction.direction, targetTile = attackTarget2 }
+            case attackTarget2 of
+                Nothing ->
+                    Nothing
+
+                Just target ->
+                    Just { sourcePlayerID = iaidoAction.player.playerID, direction = iaidoAction.direction, targetTile = target }
 
         moveEffect =
-            { targetPlayerID = iaidoAction.player.playerID, destination = moveTarget }
+            case moveTarget of
+                Nothing ->
+                    Nothing
+
+                Just target ->
+                    Just { targetPlayerID = iaidoAction.player.playerID, destination = target }
 
         invulnEffect =
             { targetPlayerID = iaidoAction.player.playerID, status = Status_Invulnerability, value = True }
@@ -334,7 +343,10 @@ doIaido game iaidoAction effectQueue =
     in
         { effectQueue
             | highStack = Effect_Status invulnEffect :: effectQueue.highStack
-            , midStack = Effect_Damage damageEffect1 :: Effect_Damage damageEffect2 :: Effect_Move moveEffect :: effectQueue.midStack
+            , midStack =
+                List.append
+                    (filterMaybe [ Maybe.map Effect_Damage damageEffect1, Maybe.map Effect_Damage damageEffect2, Maybe.map Effect_Move moveEffect ])
+                    effectQueue.midStack
             , lowestStack = Effect_Status endInvulnEffect :: Effect_Status endReadyEffect :: effectQueue.lowestStack
         }
 

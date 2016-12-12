@@ -11,6 +11,9 @@ type alias PlayerID =
 
 --Common definition of a vector
 
+type alias Coordinate =
+    { x : Int, y : Int }
+
 
 type alias Vector =
     { x : Int, y : Int }

@@ -7,4 +7,8 @@ import CombatScene.Model.InputModels exposing (..)
 
 updateDrawState : GameState -> InputState -> DrawState -> DrawState
 updateDrawState gameState inputState drawState =
-    drawState
+    let
+        tiles =
+            List.map (\tile -> { position = tile.position }) gameState.board
+    in
+        { tiles = tiles }

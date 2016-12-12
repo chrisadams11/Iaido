@@ -39,42 +39,45 @@ initCombatModel =
     { inputFrame = newInputFrame
     , inputState = initialInputState
     , gameState = initialGameState
-    , drawState = {}
+    , drawState = initialDrawState
     }
 
 
 combatScenesubscriptions : CombatModel -> Sub CombatSceneMsg
 combatScenesubscriptions model =
-    Keyboard.presses
-        (\key ->
-            let
-                mappedCommand =
-                    List.map
-                        (\inputSource ->
-                            if inputSource.upKey == key then
-                                PlayerMove { x = 0, y = 1 } inputSource.playerID |> Just
-                            else if inputSource.downKey == key then
-                                PlayerMove { x = 0, y = -1 } inputSource.playerID |> Just
-                            else if inputSource.leftKey == key then
-                                PlayerMove { x = -1, y = 0 } inputSource.playerID |> Just
-                            else if inputSource.rightKey == key then
-                                PlayerMove { x = 1, y = 0 } inputSource.playerID |> Just
-                            else if inputSource.attackKey == key then
-                                PlayerAttack inputSource.playerID |> Just
-                            else
-                                Nothing
-                        )
-                        model.inputState.inputSources
-                        |> filterMaybe
-                        |> List.head
-            in
-                case mappedCommand of
-                    Just msg ->
-                        msg
+    Sub.batch
+        [ Time.every (33 * Time.millisecond) Tick
+        , Keyboard.presses
+            (\key ->
+                let
+                    mappedCommand =
+                        List.map
+                            (\inputSource ->
+                                if inputSource.upKey == key then
+                                    PlayerMove { x = 0, y = 1 } inputSource.playerID |> Just
+                                else if inputSource.downKey == key then
+                                    PlayerMove { x = 0, y = -1 } inputSource.playerID |> Just
+                                else if inputSource.leftKey == key then
+                                    PlayerMove { x = -1, y = 0 } inputSource.playerID |> Just
+                                else if inputSource.rightKey == key then
+                                    PlayerMove { x = 1, y = 0 } inputSource.playerID |> Just
+                                else if inputSource.attackKey == key then
+                                    PlayerAttack inputSource.playerID |> Just
+                                else
+                                    Nothing
+                            )
+                            model.inputState.inputSources
+                            |> filterMaybe
+                            |> List.head
+                in
+                    case mappedCommand of
+                        Just msg ->
+                            msg
 
-                    Nothing ->
-                        Ignored
-        )
+                        Nothing ->
+                            Ignored
+            )
+        ]
 
 
 updateCombatScene : CombatSceneMsg -> CombatModel -> ( CombatModel, Cmd msg, CombatSceneTransition )
@@ -117,7 +120,7 @@ updateCombatScene msg model =
               }
             , Cmd.none
             , NoTransition
-            )        
+            )
 
         _ ->
             ( model, Cmd.none, NoTransition )
