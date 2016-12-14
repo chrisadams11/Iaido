@@ -5,6 +5,7 @@ import Utility exposing (..)
 
 type alias DrawState =
     { tiles : List TileViewModel
+    , players : List PlayerViewModel
     }
 
 
@@ -13,7 +14,13 @@ type alias TileViewModel =
     }
 
 
+type alias PlayerViewModel =
+    { position : Coordinate
+    }
+
+
 initialDrawState : DrawState
 initialDrawState =
     { tiles = []
+    , players = []
     }

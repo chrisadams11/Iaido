@@ -71,7 +71,7 @@ initialBoard =
                 { left = False, right = False, top = False, bottom = False }
             }
         )
-        <| List.range 0 100
+        <| List.range 0 99
 
 
 initialPlayers : List Player

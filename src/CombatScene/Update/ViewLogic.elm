@@ -10,5 +10,7 @@ updateDrawState gameState inputState drawState =
     let
         tiles =
             List.map (\tile -> { position = tile.position }) gameState.board
+        players =
+            List.map (\player -> { position = player.position }) gameState.players
     in
-        { tiles = tiles }
+        { tiles = tiles, players = players }
