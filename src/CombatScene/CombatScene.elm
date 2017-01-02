@@ -36,7 +36,7 @@ type alias CombatModel =
 
 initCombatModel : CombatModel
 initCombatModel =
-    { inputFrame = newInputFrame
+    { inputFrame = initialInputFrame
     , inputState = initialInputState
     , gameState = initialGameState
     , drawState = initialDrawState
@@ -86,6 +86,9 @@ updateCombatScene msg model =
         -- Main game loop
         Tick time ->
             let
+                cleanInputFrame = 
+                    clearInputFrame model.inputFrame
+
                 updatedInputState =
                     updateInputState model.inputFrame model.inputState
 
@@ -96,7 +99,7 @@ updateCombatScene msg model =
                     updateDrawState model.gameState model.inputState model.drawState
             in
                 ( { model
-                    | inputFrame = newInputFrame
+                    | inputFrame = cleanInputFrame
                     , inputState = updatedInputState
                     , gameState = updatedGameState
                     , drawState = updatedDrawState

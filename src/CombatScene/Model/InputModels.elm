@@ -62,11 +62,19 @@ type alias InputSource =
     }
 
 
-newInputFrame : InputFrame
-newInputFrame =
-    { playerInputs = []
+initialInputFrame : InputFrame
+initialInputFrame =
+    { playerInputs =
+        [ { playerID = 1
+          , moveKeys = zeroVector
+          , attackBtn = False
+          }
+        , { playerID = 2
+          , moveKeys = zeroVector
+          , attackBtn = False
+          }
+        ]
     }
-
 
 
 --A starting input state, only used for development.
@@ -99,17 +107,17 @@ initialInputState =
 inputSources : List InputSource
 inputSources =
     [ { playerID = 1
-      , upKey = 1
-      , downKey = 2
-      , leftKey = 3
-      , rightKey = 4
-      , attackKey = 5
+      , upKey = 87
+      , downKey = 83
+      , leftKey = 37
+      , rightKey = 39
+      , attackKey = 70
       }
     , { playerID = 2
-      , upKey = 6
-      , downKey = 7
-      , leftKey = 8
-      , rightKey = 9
-      , attackKey = 10
+      , upKey = 38
+      , downKey = 40
+      , leftKey = 37
+      , rightKey = 39
+      , attackKey = 190
       }
     ]
