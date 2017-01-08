@@ -52,21 +52,17 @@ addPlayerAttackToInputFrame playerID inputFrame =
 
 updateInputState : InputFrame -> InputState -> InputState
 updateInputState inputFrame inputState =
-    let
-        turnChanged =
-            inputState.ticks >= 100
-    in
-        { inputState
-            | playerInputStates =
-                if not turnChanged then
-                    List.map2 updatePlayerInputState 
-                        (List.sortBy (\i -> i.playerID) inputFrame.playerInputs) 
-                        (List.sortBy (\i -> i.playerID) inputState.playerInputStates)
-                else
-                    List.map clearPlayerInputState inputState.playerInputStates
-            , ticks = (inputState.ticks % 100) + 1
-            , turnChanged = turnChanged
-        }
+    { inputState
+        | playerInputStates =
+            if not inputState.turnChanged then
+                List.map2 updatePlayerInputState 
+                    (List.sortBy (\i -> i.playerID) inputFrame.playerInputs) 
+                    (List.sortBy (\i -> i.playerID) inputState.playerInputStates)
+            else
+                List.map clearPlayerInputState inputState.playerInputStates
+        , ticks = (inputState.ticks % 100) + 1
+        , turnChanged = inputState.ticks >= 100
+    }
 
 
 
