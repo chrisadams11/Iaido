@@ -59,7 +59,9 @@ updateInputState inputFrame inputState =
         { inputState
             | playerInputStates =
                 if not turnChanged then
-                    List.map2 updatePlayerInputState inputFrame.playerInputs inputState.playerInputStates
+                    List.map2 updatePlayerInputState 
+                        (List.sortBy (\i -> i.playerID) inputFrame.playerInputs) 
+                        (List.sortBy (\i -> i.playerID) inputState.playerInputStates)
                 else
                     List.map clearPlayerInputState inputState.playerInputStates
             , ticks = (inputState.ticks % 100) + 1

@@ -2,7 +2,6 @@ module CombatScene.Model.InputModels exposing (..)
 
 import Utility exposing (..)
 import Char exposing (KeyCode)
-import Char
 
 
 --Stateless game input,
@@ -107,17 +106,17 @@ initialInputState =
 inputSources : List InputSource
 inputSources =
     [ { playerID = 1
-      , upKey = 87
-      , downKey = 83
-      , leftKey = 37
-      , rightKey = 39
-      , attackKey = 70
+      , upKey = Char.toCode 'w'
+      , downKey = Char.toCode 's'
+      , leftKey = Char.toCode 'a'
+      , rightKey = Char.toCode 'd'
+      , attackKey = Char.toCode 'f'
       }
     , { playerID = 2
-      , upKey = 38
-      , downKey = 40
-      , leftKey = 37
-      , rightKey = 39
-      , attackKey = 190
+      , upKey = Char.toCode 'i'
+      , downKey = Char.toCode 'k'
+      , leftKey = Char.toCode 'j'
+      , rightKey = Char.toCode 'l'
+      , attackKey = Char.toCode ';'
       }
     ]

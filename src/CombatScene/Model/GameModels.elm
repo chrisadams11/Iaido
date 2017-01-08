@@ -77,7 +77,7 @@ initialBoard =
 initialPlayers : List Player
 initialPlayers =
     [ { playerID = 1
-      , position = { x = 0, y = 0 }
+      , position = { x = 1, y = 0 }
       , iaido = True
       , collided = False
       , status = []
@@ -85,7 +85,7 @@ initialPlayers =
       , momentum = { dx = 0, dy = 0 }
       }
     , { playerID = 2
-      , position = { x = 1, y = 0 }
+      , position = { x = 8, y = 0 }
       , iaido = True
       , collided = False
       , status = []
