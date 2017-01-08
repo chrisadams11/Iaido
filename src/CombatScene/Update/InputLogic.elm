@@ -52,18 +52,35 @@ addPlayerAttackToInputFrame playerID inputFrame =
 
 updateInputState : InputFrame -> InputState -> InputState
 updateInputState inputFrame inputState =
-    { inputState
-        | playerInputStates =
-            if not inputState.turnChanged then
+    if inputState.turnChanged then
+        if inputState.currentPhase.turnsInPhase - inputState.turnCount <= 1 
+            && List.length inputState.remainingPhases > 0 then
+            { inputState
+                | playerInputStates =
+                    List.map clearPlayerInputState inputState.playerInputStates
+                , turnCount = 0
+                , currentPhase = unsafeHead inputState.remainingPhases
+                , remainingPhases = unsafeTail inputState.remainingPhases
+                , ticks = 0
+                , turnChanged = False
+            }
+        else
+            { inputState
+                | playerInputStates =
+                    List.map clearPlayerInputState inputState.playerInputStates
+                , turnCount = inputState.turnCount + 1
+                , ticks = 0
+                , turnChanged = False
+            }
+    else
+        { inputState
+            | playerInputStates =
                 List.map2 updatePlayerInputState 
                     (List.sortBy (\i -> i.playerID) inputFrame.playerInputs) 
                     (List.sortBy (\i -> i.playerID) inputState.playerInputStates)
-            else
-                List.map clearPlayerInputState inputState.playerInputStates
-        , ticks = (inputState.ticks % 100) + 1
-        , turnChanged = inputState.ticks >= 100
-    }
-
+            , ticks = inputState.ticks + 1
+            , turnChanged = inputState.ticks >= inputState.currentPhase.ticksPerTurn
+        }
 
 
 --Updates a player input state given a new frame of player input data

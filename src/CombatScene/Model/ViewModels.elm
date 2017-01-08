@@ -6,6 +6,7 @@ import Utility exposing (..)
 type alias DrawState =
     { tiles : List TileViewModel
     , players : List PlayerViewModel
+    , timer : Float
     }
 
 
@@ -23,4 +24,5 @@ initialDrawState : DrawState
 initialDrawState =
     { tiles = []
     , players = []
+    , timer = 0.0
     }

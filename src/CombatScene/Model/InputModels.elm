@@ -13,7 +13,6 @@ type alias InputFrame =
     }
 
 
-
 --Stateless input commands from a single player
 
 
@@ -24,7 +23,6 @@ type alias PlayerInputFrame =
     }
 
 
-
 --Stateful game input
 
 
@@ -33,8 +31,10 @@ type alias InputState =
     , inputSources : List InputSource
     , ticks : Int
     , turnChanged : Bool
+    , turnCount : Int
+    , currentPhase : TempoPhase
+    , remainingPhases : List TempoPhase
     }
-
 
 
 --Stateful input commands from a single player
@@ -59,6 +59,23 @@ type alias InputSource =
     , rightKey : KeyCode
     , attackKey : KeyCode
     }
+
+
+type alias TempoPhase = 
+    { ticksPerTurn : Int
+    , turnsInPhase : Int
+    }
+
+
+tempoPhases : List TempoPhase
+tempoPhases = 
+    [ TempoPhase 100 4
+    , TempoPhase 75 12
+    , TempoPhase 50 16
+    , TempoPhase 35 24
+    , TempoPhase 20 10
+    , TempoPhase 10 -1
+    ]
 
 
 initialInputFrame : InputFrame
@@ -95,6 +112,9 @@ initialInputState =
     , inputSources = inputSources
     , ticks = 0
     , turnChanged = False
+    , turnCount = 0
+    , currentPhase = unsafeHead tempoPhases
+    , remainingPhases = unsafeTail tempoPhases
     }
 
 

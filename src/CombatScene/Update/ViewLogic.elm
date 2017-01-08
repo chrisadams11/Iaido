@@ -13,4 +13,7 @@ updateDrawState gameState inputState drawState =
         players =
             List.map (\player -> { position = player.position }) gameState.players
     in
-        { tiles = tiles, players = players }
+        { tiles = tiles
+        , players = players
+        , timer = toFloat inputState.ticks / toFloat inputState.currentPhase.ticksPerTurn 
+        }
