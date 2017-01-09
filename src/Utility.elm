@@ -128,3 +128,8 @@ listUpdate identifier l e =
                 (\i -> not (identifier i))
                 l
            )
+
+
+listAt : Int -> List a -> Maybe a
+listAt index l =
+    l |> List.take (index + 1) |> List.reverse |> List.head

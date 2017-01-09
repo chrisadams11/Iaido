@@ -6,15 +6,15 @@ import Element exposing (..)
 import Html exposing (Html)
 import List exposing (..)
 import Utility exposing (..)
-
+import SpriteSheet exposing (..)
 
 draw : DrawState -> Html msg
 draw drawState =
     collage 600 600
         (List.concat
             [ List.map drawTile drawState.tiles
-            , List.map drawPlayer drawState.players
             , [drawClock drawState.timer]
+            , List.map drawPlayer drawState.players
             ]
         )
     |> toHtml
@@ -34,9 +34,15 @@ drawPlayer : PlayerViewModel -> Form
 drawPlayer player =
     let
         drawPosition = scaleVector player.position 60
+        spriteFramePosition = getDrawRectangle player.animationState
     in
-        image 60 60 "Assets/Player.png" 
+        croppedImage 
+            (spriteFramePosition.x, spriteFramePosition.y) 
+            player.animationState.size.x 
+            player.animationState.size.y
+            player.animationState.sheet
         |> toForm 
+        |> scale (60/50)
         |> move (toFloat drawPosition.x - 270, toFloat drawPosition.y - 270)
 
 
