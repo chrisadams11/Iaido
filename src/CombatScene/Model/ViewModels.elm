@@ -2,7 +2,7 @@ module CombatScene.Model.ViewModels exposing (..)
 
 import Utility exposing (..)
 import SpriteSheet exposing (..)
-
+import Array
 
 type alias DrawState =
     { tiles : List TileViewModel
@@ -44,15 +44,15 @@ initialPlayerAnimation : Sprite
 initialPlayerAnimation = 
     { sheet = "Assets/Player.png"
     , animations =
-      [ playerIdleAnimation ]
+      Array.fromList [ playerIdleAnimation ]
     , currentAnimation = playerIdleAnimation
-    , size = {x=50,y=50}
-    , currentFrame = {x=15, y=0}
+    , size = {x=60,y=60}
+    , currentFrame = {x=0, y=0}
     }
 
 
 playerIdleAnimation : SpriteAnimation
 playerIdleAnimation = 
-    { frames = 30
+    { frames = 20
     , isLoop = True
     }

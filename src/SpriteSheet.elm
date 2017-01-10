@@ -2,11 +2,12 @@ module SpriteSheet exposing (..)
 
 
 import Utility exposing (..)
+import Array exposing (..)
 
 
 type alias Sprite =
   { sheet : String
-  , animations : List SpriteAnimation
+  , animations : Array SpriteAnimation
   , currentAnimation : SpriteAnimation
   , size : Vector
   , currentFrame : Vector
@@ -36,7 +37,7 @@ enterAnimation : Int -> Sprite -> Sprite
 enterAnimation row sprite =
   { sprite 
     | currentFrame = {x = 0, y = row}
-    , currentAnimation = listAt row sprite.animations |> unsafe
+    , currentAnimation = Array.get row sprite.animations |> unsafe
   }
 
 
