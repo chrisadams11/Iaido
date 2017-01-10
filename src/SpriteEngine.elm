@@ -23,8 +23,8 @@ drawStaticSprite image position size rotation =
         []
 
 
-drawSprite : Sprite -> Coordinate -> Vector -> Int -> Html msg
-drawSprite sprite position size rotation = 
+drawSprite : Sprite -> Coordinate -> Int -> Html msg
+drawSprite sprite position rotation = 
     let
         spriteFramePosition = getDrawRectangle sprite
     in
@@ -39,8 +39,8 @@ drawSprite sprite position size rotation =
                 , ( "position", "absolute" )
                 , ( "left", toString position.x ++ "px" )
                 , ( "top", toString position.y ++ "px" )
-                , ( "width", toString size.x ++ "px" )
-                , ( "height", toString size.y ++ "px" )
+                , ( "width", toString sprite.size.x ++ "px" )
+                , ( "height", toString sprite.size.y ++ "px" )
                 , ( "transform", "rotate(" ++ toString rotation ++ "deg)" )
                 ]
             ]

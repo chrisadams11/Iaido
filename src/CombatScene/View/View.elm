@@ -39,7 +39,6 @@ drawPlayer player =
         drawSprite
             player.animationState
             {x = scaledPosition.x, y = 600 - scaledPosition.y}
-            {x = 60, y = 60}
             0
 
 
