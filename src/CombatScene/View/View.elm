@@ -14,7 +14,7 @@ draw drawState =
         (List.concat
             [ List.map drawTile drawState.tiles
             , [drawClock drawState.timer]
-            , List.map drawPlayer drawState.players
+            , List.map (drawPlayer drawState) drawState.players
             ]
         )
 
@@ -29,10 +29,10 @@ drawTile tile =
             {x = scaledPosition.x, y = 600 - scaledPosition.y}
             {x = 60, y = 60}
             0
+            False
 
-
-drawPlayer : PlayerViewModel -> Html msg
-drawPlayer player =
+drawPlayer : DrawState -> PlayerViewModel -> Html msg
+drawPlayer drawState player =
     let
         scaledPosition = scaleVector player.position 60
     in
@@ -40,6 +40,20 @@ drawPlayer player =
             player.animationState
             {x = scaledPosition.x, y = 600 - scaledPosition.y}
             0
+            (orientPlayer drawState player)
+
+
+orientPlayer : DrawState -> PlayerViewModel -> Bool
+orientPlayer drawState player =
+    let
+        nearestPlayer = if List.length drawState.players < 2 then player else
+            List.sortBy 
+                (\p -> coordinateDistance p.position player.position) 
+                drawState.players
+            |> unsafeTail
+            |> unsafeHead
+    in
+        (nearestPlayer.position.x - player.position.x) < 0
 
 
 drawClock : Float -> Html msg
@@ -55,3 +69,4 @@ drawClock timer =
             {x=265, y=80}
             {x = 70, y = 70}
             0
+            False

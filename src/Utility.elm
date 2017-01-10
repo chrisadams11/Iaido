@@ -15,6 +15,15 @@ type alias Coordinate =
     { x : Int, y : Int }
 
 
+coordinateDistance : Coordinate -> Coordinate -> Float
+coordinateDistance a b =
+    let
+        x = a.x - b.x
+        y = a.y - b.y
+    in
+        (x * x) + (y * y) |> toFloat |> sqrt
+
+
 type alias Vector =
     { x : Int, y : Int }
 

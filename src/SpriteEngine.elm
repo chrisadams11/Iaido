@@ -5,8 +5,8 @@ import Html.Attributes exposing (style)
 import Utility exposing (..)
 import SpriteSheet exposing (..)
 
-drawStaticSprite : String -> Coordinate -> Vector -> Int -> Html msg
-drawStaticSprite image position size rotation =
+drawStaticSprite : String -> Coordinate -> Vector -> Int -> Bool -> Html msg
+drawStaticSprite image position size rotation flip =
     Html.div
         [ Html.Attributes.style
             [ ("background-image", "url(" ++ toString image ++ ")")
@@ -19,12 +19,13 @@ drawStaticSprite image position size rotation =
             , ( "height", toString size.y ++ "px" )
             , ( "transform", "rotate(" ++ toString rotation ++ "deg)" )
             ]
+        , if flip then flipHorizontal else style []
         ]
         []
 
 
-drawSprite : Sprite -> Coordinate -> Int -> Html msg
-drawSprite sprite position rotation = 
+drawSprite : Sprite -> Coordinate -> Int -> Bool -> Html msg
+drawSprite sprite position rotation flip= 
     let
         spriteFramePosition = getDrawRectangle sprite
     in
@@ -43,6 +44,7 @@ drawSprite sprite position rotation =
                 , ( "height", toString sprite.size.y ++ "px" )
                 , ( "transform", "rotate(" ++ toString rotation ++ "deg)" )
                 ]
+            , if flip then flipHorizontal else style []
             ]
             []
 
@@ -59,3 +61,15 @@ drawFrame size sprites =
             ]
         ]
         sprites
+
+
+flipHorizontal : Html.Attribute msg
+flipHorizontal =
+    style
+        [ ("-moz-transform", "scaleX(-1)")
+        , ("-o-transform", "scaleX(-1)")
+        , ("-webkit-transform", "scaleX(-1)")
+        , ("transform", "scaleX(-1)")
+        , ("filter", "FlipH")
+        , ("-ms-filter", "FlipH")
+        ]
