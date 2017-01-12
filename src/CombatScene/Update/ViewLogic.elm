@@ -1,6 +1,7 @@
 module CombatScene.Update.ViewLogic exposing (..)
 
 
+import Utility exposing (..)
 import CombatScene.Model.ViewModels exposing (..)
 import CombatScene.Model.GameModels exposing (..)
 import CombatScene.Model.InputModels exposing (..)
@@ -13,8 +14,9 @@ updateDrawState gameState inputState drawState =
         tiles =
             List.map (\tile -> { position = tile.position }) gameState.board
         players =
-            List.map2 
-                updatePlayerViewModel 
+            List.map3 
+                (updatePlayerViewModel inputState.turnChanged)
+                (List.sortBy (\p -> p.playerID) inputState.playerInputStates)
                 (List.sortBy (\p -> p.playerID) gameState.players)
                 (List.sortBy (\p -> p.playerID) drawState.players)
     in
@@ -24,9 +26,21 @@ updateDrawState gameState inputState drawState =
         }
 
 
-updatePlayerViewModel : Player -> PlayerViewModel -> PlayerViewModel
-updatePlayerViewModel playerState oldViewModel =
+updatePlayerViewModel : Bool -> PlayerInputState -> Player -> PlayerViewModel -> PlayerViewModel
+updatePlayerViewModel turnChanged inputState gameState oldViewModel =
+    let
+        attacking = inputState.attack
+        moving = inputState.moveDirection /= zeroVector
+    in
     { oldViewModel
-    | position = playerState.position
-    , animationState = advanceAnimation 1.0 oldViewModel.animationState
+    | position = gameState.position
+    , animationState = 
+        if not turnChanged
+            then advanceAnimation 1.0 oldViewModel.animationState
+        else if attacking
+            then enterAnimation 1 oldViewModel.animationState
+        else if moving
+            then enterAnimation 2 oldViewModel.animationState
+        else
+            enterAnimation 0 oldViewModel.animationState
     }

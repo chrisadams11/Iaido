@@ -27,7 +27,7 @@ advanceAnimation speed sprite =
       if sprite.currentAnimation.isLoop
         then
           { sprite | currentFrame = {x = 0, y = sprite.currentFrame.y}}
-       else
+      else
           enterAnimation 0 sprite
     else
       { sprite | currentFrame = {x = sprite.currentFrame.x + 1, y = sprite.currentFrame.y}}

@@ -32,7 +32,6 @@ drawSprite sprite position rotation flip=
         Html.div
             [ Html.Attributes.style
                 [ ("background-image", "url(" ++ toString sprite.sheet ++ ")")
-                , ("background-size", "cover")
                 , ("background-repeat", "no-repeat")
                 , ("background-position", 
                     toString (spriteFramePosition.x * -1) ++ "px " ++ 

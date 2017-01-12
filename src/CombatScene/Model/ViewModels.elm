@@ -44,7 +44,7 @@ initialPlayerAnimation : Sprite
 initialPlayerAnimation = 
     { sheet = "Assets/Player.png"
     , animations =
-      Array.fromList [ playerIdleAnimation ]
+      Array.fromList [ playerIdleAnimation, playerAttackAnimation, playerMoveAnimation ]
     , currentAnimation = playerIdleAnimation
     , size = {x=60,y=60}
     , currentFrame = {x=0, y=0}
@@ -53,6 +53,18 @@ initialPlayerAnimation =
 
 playerIdleAnimation : SpriteAnimation
 playerIdleAnimation = 
-    { frames = 20
+    { frames = 1
+    , isLoop = True
+    }
+
+playerAttackAnimation : SpriteAnimation
+playerAttackAnimation =
+    { frames = 30
+    , isLoop = False
+    }
+
+playerMoveAnimation : SpriteAnimation
+playerMoveAnimation =
+    { frames = 1
     , isLoop = True
     }
