@@ -29,10 +29,11 @@ drawTile tile =
             {x = scaledPosition.x, y = 600 - scaledPosition.y}
             {x = 60, y = 60}
             0
-            False
+            []
 
 drawPlayer : DrawState -> PlayerViewModel -> Html msg
 drawPlayer drawState player =
+    if player.isHit then drawEmpty else
     let
         scaledPosition = scaleVector player.position 60
     in
@@ -40,7 +41,9 @@ drawPlayer drawState player =
             player.animationState
             {x = scaledPosition.x, y = 600 - scaledPosition.y}
             0
-            (orientPlayer drawState player)
+            (if orientPlayer drawState player 
+                then [DrawOption_FlipHorizontal] 
+                else [])
 
 
 orientPlayer : DrawState -> PlayerViewModel -> Bool
@@ -69,4 +72,4 @@ drawClock timer =
             {x=265, y=80}
             {x = 70, y = 70}
             0
-            False
+            []

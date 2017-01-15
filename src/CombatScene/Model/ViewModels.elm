@@ -1,7 +1,7 @@
 module CombatScene.Model.ViewModels exposing (..)
 
 import Utility exposing (..)
-import SpriteSheet exposing (..)
+import Sprite exposing (..)
 import Array
 
 type alias DrawState =
@@ -19,6 +19,7 @@ type alias TileViewModel =
 type alias PlayerViewModel =
     { playerID : PlayerID
     , position : Coordinate
+    , isHit : Bool
     , animationState : Sprite
     }
 
@@ -29,42 +30,69 @@ initialDrawState =
     , players = 
         [ { playerID = 1
           , position = {x=0, y=0}
-          , animationState = initialPlayerAnimation
+          , isHit = False
+          , animationState = playerSprite
           }
         , { playerID = 2
           , position = {x=0, y=0}
-          , animationState = initialPlayerAnimation
+          , isHit = False
+          , animationState = playerSprite
           }
         ]
     , timer = 0.0
     }
 
 
-initialPlayerAnimation : Sprite
-initialPlayerAnimation = 
-    { sheet = "Assets/Player.png"
+playerSprite : Sprite
+playerSprite =
+    { sheetFile = "Assets/Player.png"
     , animations =
-      Array.fromList [ playerIdleAnimation, playerAttackAnimation, playerMoveAnimation ]
-    , currentAnimation = playerIdleAnimation
-    , size = {x=60,y=60}
-    , currentFrame = {x=0, y=0}
-    }
-
-
-playerIdleAnimation : SpriteAnimation
-playerIdleAnimation = 
-    { frames = 1
-    , isLoop = True
-    }
-
-playerAttackAnimation : SpriteAnimation
-playerAttackAnimation =
-    { frames = 30
-    , isLoop = False
-    }
-
-playerMoveAnimation : SpriteAnimation
-playerMoveAnimation =
-    { frames = 1
-    , isLoop = True
+        [ { frames = -- Idle animation
+            [ { drawPos = {x=0,y=0}
+              , drawSize = {x = 60, y = 60}
+              , duration = 1
+              , disp = Disp_Const {point = {x=0,y=0}}
+              }
+            ] |> Array.fromList
+          , isLoop = True
+          }
+        , { frames = -- Attack animation
+            [ { drawPos = {x=0,y=60}
+              , drawSize = {x = 60, y = 60}
+              , duration = 6
+              , disp = Disp_Const {point = {x=0,y=0}}
+              }
+            , { drawPos = {x=60,y=60}
+              , drawSize = {x = 60, y = 60}
+              , duration = 8
+              , disp = Disp_Const {point = {x=0,y=0}}
+              }
+            , { drawPos = {x=120,y=60}
+              , drawSize = {x = 60, y = 60}
+              , duration = 8
+              , disp = Disp_Const {point = {x=0,y=0}}
+              }
+            , { drawPos = {x=180,y=60}
+              , drawSize = {x = 60, y = 60}
+              , duration = 8
+              , disp = Disp_Const {point = {x=0,y=0}}
+              }
+            ] |> Array.fromList
+          , isLoop = False
+          }
+        , { frames = -- Move animation
+            [ { drawPos = {x=0,y=120}
+              , drawSize = {x = 60, y = 60}
+              , duration = 30
+              , disp = Disp_Const {point = {x=0,y=0}}
+              }
+            ] |> Array.fromList
+          , isLoop = False
+          }
+        ] |> Array.fromList
+    , state = 
+        { animation = 0
+        , frame = 0
+        , ticks = 0
+        }
     }

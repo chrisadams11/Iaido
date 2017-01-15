@@ -5,7 +5,7 @@ import Utility exposing (..)
 import CombatScene.Model.ViewModels exposing (..)
 import CombatScene.Model.GameModels exposing (..)
 import CombatScene.Model.InputModels exposing (..)
-import SpriteSheet exposing (..)
+import Sprite exposing (..)
 
 
 updateDrawState : GameState -> InputState -> DrawState -> DrawState
@@ -34,6 +34,7 @@ updatePlayerViewModel turnChanged inputState gameState oldViewModel =
     in
     { oldViewModel
     | position = gameState.position
+    , isHit = gameState.hit
     , animationState = 
         if not turnChanged
             then advanceAnimation 1.0 oldViewModel.animationState
