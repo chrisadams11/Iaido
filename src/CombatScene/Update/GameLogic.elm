@@ -48,12 +48,16 @@ decideAction playerWithInput =
         input =
             playerWithInput.inputState
     in
-        if input.attack then
-            if listContains player.status Status_Ready then
-                Action_Iaido (IaidoAction player input.moveDirection)
-            else
-                Action_Attack (AttackAction player input.moveDirection)
-        else if input.moveDirection /= zeroVector then
-            Action_Move (MoveAction player input.moveDirection)
+        if player.hit 
+            then Action_Ready (ReadyAction player) 
         else
-            Action_Ready (ReadyAction player)
+            if input.moveDirection /= zeroVector then
+                if input.attack then
+                    if listContains player.status Status_Ready then
+                        Action_Iaido (IaidoAction player input.moveDirection)
+                    else
+                        Action_Attack (AttackAction player input.moveDirection)
+                else
+                    Action_Move (MoveAction player input.moveDirection)
+            else
+                Action_Ready (ReadyAction player)

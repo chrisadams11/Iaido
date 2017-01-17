@@ -75,7 +75,7 @@ type alias EffectQueue =
     , lowStack : List Effect
     , lowestStack : List Effect
     }
-
+    
 
 resolveEffectQueue : EffectQueue -> GameState -> GameState
 resolveEffectQueue effects game =
@@ -111,7 +111,7 @@ resolveDamage damage effects game =
                 (\e ->
                     case e of
                         Effect_Block b ->
-                            (compareTiles b.targetTile damage.targetTile == EQ) && b.direction == damage.direction
+                            (compareTiles b.targetTile damage.targetTile == EQ) && b.direction == reverseVector damage.direction
 
                         _ ->
                             False
@@ -123,7 +123,7 @@ resolveDamage damage effects game =
         else
             let
                 attackTargets =
-                    List.filter (\player -> compareTiles (unsafe <| getTile game.board player.position) damage.targetTile == EQ) game.players
+                    List.filter (\player -> compareTiles (getTile game.board player.position |> unsafe) damage.targetTile == EQ && player.playerID /= damage.sourcePlayerID) game.players
             in
                 case List.head attackTargets of
                     Nothing ->
@@ -237,19 +237,33 @@ doAction game action effects =
 
 doAttack : GameState -> AttackAction -> EffectQueue -> EffectQueue
 doAttack game attackAction effectQueue =
-    case calculateAttackTarget game attackAction.player attackAction.direction of
-        Nothing ->
-            effectQueue
+    let
+        lowStack = 
+            case calculateAttackTarget game attackAction.player attackAction.direction of
+                Nothing ->
+                    effectQueue.lowStack
 
-        Just tile ->
-            let
-                damageEffect =
-                    { sourcePlayerID = attackAction.player.playerID, direction = attackAction.direction, targetTile = tile }
+                Just tile ->
+                    let
+                        damageEffect =
+                            { sourcePlayerID = attackAction.player.playerID, direction = attackAction.direction, targetTile = tile }
 
-                blockEffect =
-                    { sourcePlayerID = attackAction.player.playerID, direction = reverseVector attackAction.direction, targetTile = unsafe <| getTile game.board attackAction.player.position }
-            in
-                { effectQueue | lowStack = Effect_Damage damageEffect :: Effect_Block blockEffect :: effectQueue.lowStack }
+                        blockEffect =
+                            { sourcePlayerID = attackAction.player.playerID, direction = attackAction.direction, targetTile = unsafe <| getTile game.board attackAction.player.position }
+                    in
+                        Effect_Damage damageEffect :: Effect_Block blockEffect :: effectQueue.lowStack
+
+        midStack = -- Apply gravity
+            case calculateMoveTarget game attackAction.player {x=0, y=-1} of
+                Nothing -> 
+                    effectQueue.midStack
+
+                Just destination ->
+                    Effect_Move { targetPlayerID = attackAction.player.playerID, destination = destination } :: effectQueue.midStack
+    in
+        { effectQueue
+        | lowStack = lowStack
+        , midStack = midStack}
 
 
 calculateAttackTarget : GameState -> Player -> Vector -> Maybe Tile
@@ -269,16 +283,24 @@ calculateAttackTarget game player dir =
 
 doMove : GameState -> MoveAction -> EffectQueue -> EffectQueue
 doMove game moveAction effectQueue =
-    case calculateMoveTarget game moveAction.player moveAction.direction of
-        Nothing ->
-            effectQueue
+    let
+        gravity = case calculateMoveTarget game moveAction.player {x=0, y=-1} of
+            Nothing ->
+                0
+            
+            Just below ->
+                1
+    in
+        case calculateMoveTarget game moveAction.player {x = moveAction.direction.x, y = moveAction.direction.y - gravity} of
+            Nothing ->
+                effectQueue
 
-        Just tile ->
-            let
-                moveEffect =
-                    { targetPlayerID = moveAction.player.playerID, destination = tile }
-            in
-                { effectQueue | highStack = Effect_Move moveEffect :: effectQueue.highStack }
+            Just tile ->
+                let
+                    moveEffect =
+                        { targetPlayerID = moveAction.player.playerID, destination = tile }
+                in
+                    { effectQueue | highStack = Effect_Move moveEffect :: effectQueue.highStack }
 
 
 calculateMoveTarget : GameState -> Player -> Vector -> Maybe Tile
@@ -329,25 +351,26 @@ doIaido game iaidoAction effectQueue =
                 Nothing ->
                     Nothing
 
-                Just target ->
-                    Just { targetPlayerID = iaidoAction.player.playerID, destination = target }
+                Just destination ->
+                    Just { targetPlayerID = iaidoAction.player.playerID, destination = destination }
 
-        invulnEffect =
-            { targetPlayerID = iaidoAction.player.playerID, status = Status_Invulnerability, value = True }
-
-        endInvulnEffect =
-            { targetPlayerID = iaidoAction.player.playerID, status = Status_Invulnerability, value = False }
+        blockEffect = 
+            case moveTarget of
+                Nothing ->
+                    { sourcePlayerID = iaidoAction.player.playerID, direction = iaidoAction.direction, targetTile = getTile game.board iaidoAction.player.position |> unsafe}
+                
+                Just destination ->
+                    { sourcePlayerID = iaidoAction.player.playerID, direction = iaidoAction.direction, targetTile = destination }
 
         endReadyEffect =
             { targetPlayerID = iaidoAction.player.playerID, status = Status_Ready, value = False }
     in
         { effectQueue
-            | highStack = Effect_Status invulnEffect :: effectQueue.highStack
-            , midStack =
-                List.append
+            | midStack
+                = Effect_Block blockEffect
+                :: List.append
                     (filterMaybe [ Maybe.map Effect_Damage damageEffect1, Maybe.map Effect_Damage damageEffect2, Maybe.map Effect_Move moveEffect ])
                     effectQueue.midStack
-            , lowestStack = Effect_Status endInvulnEffect :: Effect_Status endReadyEffect :: effectQueue.lowestStack
         }
 
 
@@ -356,5 +379,17 @@ doReady game readyAction effectQueue =
     let
         readyEffect =
             { targetPlayerID = readyAction.player.playerID, status = Status_Ready, value = True }
+
+        gravityEffect =
+            case calculateMoveTarget game readyAction.player {x=0, y=-1} of
+                Nothing -> 
+                    Nothing
+
+                Just destination ->
+                    Just { targetPlayerID = readyAction.player.playerID, destination = destination }
     in
-        { effectQueue | lowestStack = Effect_Status readyEffect :: effectQueue.lowestStack }
+        { effectQueue 
+        | lowestStack = Effect_Status readyEffect :: effectQueue.lowestStack
+        , highStack = case gravityEffect of 
+            Nothing -> effectQueue.highStack 
+            Just gravity -> Effect_Move gravity :: effectQueue.highStack }

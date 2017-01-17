@@ -89,6 +89,15 @@ playerSprite =
             ] |> Array.fromList
           , isLoop = False
           }
+        , { frames = -- Sit animation
+            [ { drawPos = {x=0,y=180}
+              , drawSize = {x = 60, y = 60}
+              , duration = 1
+              , disp = Disp_Const {point = {x=0,y=0}}
+              }
+            ] |> Array.fromList
+          , isLoop = True
+          }
         ] |> Array.fromList
     , state = 
         { animation = 0

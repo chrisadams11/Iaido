@@ -33,7 +33,6 @@ drawTile tile =
 
 drawPlayer : DrawState -> PlayerViewModel -> Html msg
 drawPlayer drawState player =
-    if player.isHit then drawEmpty else
     let
         scaledPosition = scaleVector player.position 60
     in

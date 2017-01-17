@@ -38,6 +38,8 @@ updatePlayerViewModel turnChanged inputState gameState oldViewModel =
     , animationState = 
         if not turnChanged
             then advanceAnimation 1.0 oldViewModel.animationState
+        else if gameState.hit
+            then enterAnimation 3 oldViewModel.animationState
         else if attacking
             then enterAnimation 1 oldViewModel.animationState
         else if moving
